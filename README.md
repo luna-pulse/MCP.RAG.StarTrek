@@ -16,14 +16,7 @@
 
 #### С Docker
 
-SDK на хосте не нужен. Образ и контейнер — `startrek-indexer`. Проверка образа:
-
-```powershell
-docker compose build indexer
-docker compose run --rm -T --no-deps indexer health-check
-```
-
-`--no-deps` не поднимает ChromaDB. Другие команды индексатора — после имени сервиса: `docker compose run --rm -T indexer <команда>` (`analyze`, `chunk`, `embed`).
+SDK на хосте не нужен. Сборка образа `startrek-indexer`, `health-check` и запуск команд в контейнере — в [Docs/7. План запуска в Docker.md](Docs/7.%20План%20запуска%20в%20Docker.md).
 
 #### Без Docker
 
@@ -73,10 +66,6 @@ Compose поднимает два сервиса. `docker compose up` не ин�
 - Папка [ChromaDB](ChromaDB) — файлы хранилища, их пишет контейнер. C#-пакет эту папку напрямую не открывает: запись идёт только через API.
 
 Консоль контейнер сама не запускает. Если API не отвечает, `embed` останавливается с сообщением, что ChromaDB не запущена.
-
-## Индексатор в Docker
-
-Образ и контейнер называются `startrek-indexer`. Образ собирается из [Dockerfile](Dockerfile): стадии `mcr.microsoft.com/dotnet/sdk:10.0` и `mcr.microsoft.com/dotnet/runtime:10.0` (glibc, не Alpine). `model.onnx` в образ не копируется. Файл решения лежит в образе над каталогом приложения, чтобы процесс нашёл корень репозитория. В `appsettings.json` адрес Chroma остаётся `http://127.0.0.1:8000`. Внутри Compose его перекрывает `STARTREK_Indexer__Chroma__Endpoint=http://chromadb:8000`.
 
 ## Схема
 
