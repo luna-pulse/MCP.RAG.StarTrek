@@ -19,3 +19,27 @@ services:
     environment:
       STARTREK_Indexer__Chroma__Endpoint: http://chromadb:8000
     command: ["health-check"]
+
+  mcp:
+    image: startrek-mcp
+    container_name: startrek-mcp
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    ports:
+      - "8080:8080"
+    depends_on:
+      - chromadb
+    environment:
+      STARTREK_Indexer__Chroma__Endpoint: http://chromadb:8000
+      STARTREK_Indexer__Paths__Bm25Corpus: /opt/startrek/data/bm25/corpus.json
+      STARTREK_Indexer__Paths__EmbeddingModel: /opt/startrek/models/multilingual-e5-small
+      STARTREK_Mcp__Urls: http://0.0.0.0:8080
+      STARTREK_Mcp__Logging__Level: Debug
+      STARTREK_Mcp__Logging__InitializationLogPath: /opt/startrek/data/logs/mcp-init.log
+      STARTREK_Mcp__Logging__RequestLogPath: /opt/startrek/data/logs/mcp-requests.log
+    volumes:
+      - ./Data/bm25:/opt/startrek/data/bm25:ro
+      - ./Models/multilingual-e5-small:/opt/startrek/models/multilingual-e5-small:ro
+      - ./Data/Logs:/opt/startrek/data/logs
+    restart: unless-stopped

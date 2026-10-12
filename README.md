@@ -35,7 +35,27 @@ dotnet run --project src/StarTrek.Indexer -- <команда>
 | `help` | Печатает список команд и завершается с кодом 0. |
 
 ### 2. Запуск MCP-сервера
-... в разработке ... 
+
+Сервис `mcp` — образ и контейнер `startrek-mcp`, порт `8080`. Сборка и запуск:
+
+```powershell
+docker compose build mcp
+docker compose up -d chromadb mcp
+```
+
+`docker compose up` по-прежнему не вызывает `analyze`, `chunk` и `embed`. Сервис `indexer` выполняет `health-check` и завершается. Сервис `mcp` остаётся слушать HTTP.
+
+Адрес клиента: `http://127.0.0.1:8080/mcp`.
+
+Проверка процесса: `GET http://127.0.0.1:8080/health`. Ответ — код 200 и тело `MCP-сервер отвечает: healthy.` Этот запрос не читает корпус BM25, не грузит ONNX и не вызывает ChromaDB: строка значит, что процесс слушает, а не что индекс на месте. Проверка успешна и без корпуса, и без `model.onnx`.
+
+Три инструмента:
+
+- `search_bm25` — слова запроса (Okapi BM25);
+- `search_semantic` — смысл в ChromaDB;
+- `search_hybrid` — слова и смысл (RRF).
+
+Пример подключения — файл `mcp.example.json` в корне репозитория. Скопируйте его в `.vscode/mcp.json` для VS Code Copilot. Каталог `.vscode/` в git не входит. В примере адрес HTTP, не команда STDIO. 
 
 ## Модель эмбеддингов
 

@@ -8,3 +8,5 @@
 TestResults/
 coverage/
 Models/multilingual-e5-small/model.onnx
+Data/Logs/
+Tests/StarTrek.Mcp.Tests/Artifacts/

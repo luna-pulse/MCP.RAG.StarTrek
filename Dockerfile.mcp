@@ -1,0 +1,17 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+COPY global.json MCP.RAG.StarTrek.sln ./
+COPY src/StarTrek.Indexer/StarTrek.Indexer.csproj src/StarTrek.Indexer/
+COPY src/StarTrek.Mcp/StarTrek.Mcp.csproj src/StarTrek.Mcp/
+RUN dotnet restore src/StarTrek.Mcp/StarTrek.Mcp.csproj
+COPY src/StarTrek.Indexer/ src/StarTrek.Indexer/
+COPY src/StarTrek.Mcp/ src/StarTrek.Mcp/
+RUN dotnet publish src/StarTrek.Mcp/StarTrek.Mcp.csproj -c Release -o /publish --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+WORKDIR /opt/startrek
+COPY MCP.RAG.StarTrek.sln /opt/startrek/MCP.RAG.StarTrek.sln
+WORKDIR /opt/startrek/app
+COPY --from=build /publish .
+ENV LANG=C.UTF-8
+ENTRYPOINT ["dotnet", "StarTrek.Mcp.dll"]
