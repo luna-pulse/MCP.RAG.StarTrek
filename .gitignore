@@ -7,7 +7,4 @@
 *.suo
 TestResults/
 coverage/
-/models/
-/Data/
-/ChromaDB/*
-!/ChromaDB/.gitkeep
+Models/multilingual-e5-small/model.onnx

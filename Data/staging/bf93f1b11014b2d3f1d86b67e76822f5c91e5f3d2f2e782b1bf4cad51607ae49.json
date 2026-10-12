@@ -1,0 +1,27 @@
+{
+  "document_id": "bf93f1b11014b2d3f1d86b67e76822f5c91e5f3d2f2e782b1bf4cad51607ae49",
+  "source_file": "SourceFiles/Races/Ааамаззариты.txt",
+  "content_hash": "df24fde55433d34aee24df696d619bedf5a0cf03a7a9ebd9e5c9605b27522d7e",
+  "title": "Ааамаззариты",
+  "original_title": "Aaamazzarite",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 134,
+      "body": "Ааамаззариты — раса гуманоидов с планеты Ааамаззара, в системе Эпсилон Серпентис, в Альфа-квадранте. с которыми Федерация вступила в первый контакт к концу 23 века.\nДва представителя посетили станцию ​​воздушного трамвая штаб-квартиры Звездного Флота в Сан-Франциско в звездную дату 7410.2. (Star Trek: The Motion Picture; PIC: \"Disengage\"; DIS: \"Red Directive\")",
+      "embedding_text": "Документ: Ааамаззариты\nТип сущности: раса\nРаздел: Общие сведения\n\nАаамаззариты — раса гуманоидов с планеты Ааамаззара, в системе Эпсилон Серпентис, в Альфа-квадранте. с которыми Федерация вступила в первый контакт к концу 23 века.\nДва представителя посетили станцию ​​воздушного трамвая штаб-квартиры Звездного Флота в Сан-Франциско в звездную дату 7410.2. (Star Trek: The Motion Picture; PIC: \"Disengage\"; DIS: \"Red Directive\")"
+    }
+  ]
+}

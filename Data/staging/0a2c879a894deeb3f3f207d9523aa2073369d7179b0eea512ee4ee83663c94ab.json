@@ -1,0 +1,27 @@
+{
+  "document_id": "0a2c879a894deeb3f3f207d9523aa2073369d7179b0eea512ee4ee83663c94ab",
+  "source_file": "SourceFiles/Races/Жители Сигмы Дракона IV.txt",
+  "content_hash": "07a7c451300f670517890003fffd9f553cc3f10866beb933da5ed488ae40dccd",
+  "title": "Жители Сигмы Дракона IV",
+  "original_title": "Sigma Draconis IV native",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 102,
+      "body": "Туземцы Сигмы Дракониса IV — раса, обитавшая на планете Сигма Драконис IV до космических полетов.\nВ 2268 году цивилизация туземцев имела рейтинг G по промышленному масштабу Федерации – земной эквивалент 2030 года. (TOS: \"Spock's Brain\")",
+      "embedding_text": "Документ: Жители Сигмы Дракона IV\nТип сущности: раса\nРаздел: Общие сведения\n\nТуземцы Сигмы Дракониса IV — раса, обитавшая на планете Сигма Драконис IV до космических полетов.\nВ 2268 году цивилизация туземцев имела рейтинг G по промышленному масштабу Федерации – земной эквивалент 2030 года. (TOS: \"Spock's Brain\")"
+    }
+  ]
+}

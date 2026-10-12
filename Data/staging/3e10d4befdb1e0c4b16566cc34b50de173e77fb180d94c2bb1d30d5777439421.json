@@ -1,0 +1,41 @@
+{
+  "document_id": "3e10d4befdb1e0c4b16566cc34b50de173e77fb180d94c2bb1d30d5777439421",
+  "source_file": "SourceFiles/Races/Раса Риски.txt",
+  "content_hash": "2808812206bbbe81cf0b7150e17821c893f158c8cef92dbec612ff525cbe555b",
+  "title": "Раса Риски",
+  "original_title": "Riska's species",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 97,
+      "body": "Раса Риски была гуманоидной расой. У них была бледная кожа, два гребня, идущие вдоль лба, и гребень, идущий вертикально на подбородке.\n- Представитель этого вида, Риска, жил на Deep Space 9 в 2371 году. (DS9: \"Life Support\")",
+      "embedding_text": "Документ: Раса Риски\nТип сущности: раса\nРаздел: Общие сведения\n\nРаса Риски была гуманоидной расой. У них была бледная кожа, два гребня, идущие вдоль лба, и гребень, идущий вертикально на подбородке.\n- Представитель этого вида, Риска, жил на Deep Space 9 в 2371 году. (DS9: \"Life Support\")"
+    },
+    {
+      "chunk_index": 2,
+      "heading_level": 4,
+      "section_path": [
+        "См. также"
+      ],
+      "section_title": "См. также",
+      "position": "lines 9-11",
+      "start_line": 9,
+      "end_line": 11,
+      "token_count": 29,
+      "body": "- дядя Риски",
+      "embedding_text": "Документ: Раса Риски\nТип сущности: раса\nРаздел: См. также\n\n- дядя Риски"
+    }
+  ]
+}

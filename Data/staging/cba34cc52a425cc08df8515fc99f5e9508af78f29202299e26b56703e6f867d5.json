@@ -1,0 +1,41 @@
+{
+  "document_id": "cba34cc52a425cc08df8515fc99f5e9508af78f29202299e26b56703e6f867d5",
+  "source_file": "SourceFiles/Races/Раса Колта.txt",
+  "content_hash": "6032adb9256fff5f65781e9f247b026f714bb872a440f380c2c9fe986f4d939b",
+  "title": "Раса Колта",
+  "original_title": "Colt's species",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 92,
+      "body": "Олатунде — космическая раса гуманоидов. Они характеризовались красной кожей и морщинистой чешуей, покрывающей лица.\n- Олатунде служили в Звездном Флоте, по крайней мере, с 23-го века. (DIS: \"Such Sweet Sorrow\")",
+      "embedding_text": "Документ: Раса Колта\nТип сущности: раса\nРаздел: Общие сведения\n\nОлатунде — космическая раса гуманоидов. Они характеризовались красной кожей и морщинистой чешуей, покрывающей лица.\n- Олатунде служили в Звездном Флоте, по крайней мере, с 23-го века. (DIS: \"Such Sweet Sorrow\")"
+    },
+    {
+      "chunk_index": 2,
+      "heading_level": 4,
+      "section_path": [
+        "Отдельные представители"
+      ],
+      "section_title": "Отдельные представители",
+      "position": "lines 9-12",
+      "start_line": 9,
+      "end_line": 12,
+      "token_count": 33,
+      "body": "- Астрид Атли\n- Кольт",
+      "embedding_text": "Документ: Раса Колта\nТип сущности: раса\nРаздел: Отдельные представители\n\n- Астрид Атли\n- Кольт"
+    }
+  ]
+}

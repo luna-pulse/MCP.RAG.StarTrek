@@ -1,0 +1,27 @@
+{
+  "document_id": "ad9efdffeb1d2f243926134bfeed4a3d8d75eaf765569ce46665c971acf9a6a4",
+  "source_file": "SourceFiles/Races/Гри.txt",
+  "content_hash": "540761e1c70aae4724bd755130cc265228df4f0837ae147a993c95705971d5ff",
+  "title": "Гри",
+  "original_title": "Gree",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 75,
+      "body": "Гри были разновидностью инопланетян с ярко выраженным хоботком.\nПо словам Доктора, стимуляция фолликулов Гри на хоботке привела к отеку ушного канала. (VOY: \"Elogium\")",
+      "embedding_text": "Документ: Гри\nТип сущности: раса\nРаздел: Общие сведения\n\nГри были разновидностью инопланетян с ярко выраженным хоботком.\nПо словам Доктора, стимуляция фолликулов Гри на хоботке привела к отеку ушного канала. (VOY: \"Elogium\")"
+    }
+  ]
+}

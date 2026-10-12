@@ -1,0 +1,27 @@
+{
+  "document_id": "764c643fd37c9a01c83738150479b5a906f4233b786c291b600fafa766f5e142",
+  "source_file": "SourceFiles/Races/Делбианцы.txt",
+  "content_hash": "4b2b19f35f4852c99683bf0fe6ae41da9b0693cc3bab6c21b6883e6bf3826532",
+  "title": "Делбианцы",
+  "original_title": "Delbian",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 90,
+      "body": "Делбианцы — гуманоидная раса, обитавшая на планете Дельб II. Их отличали выступы на носу и висках.\nНеллен Торе была представителем этого вида и работала в Объединенной федерации планет. (TNG: \"The Drumhead\")",
+      "embedding_text": "Документ: Делбианцы\nТип сущности: раса\nРаздел: Общие сведения\n\nДелбианцы — гуманоидная раса, обитавшая на планете Дельб II. Их отличали выступы на носу и висках.\nНеллен Торе была представителем этого вида и работала в Объединенной федерации планет. (TNG: \"The Drumhead\")"
+    }
+  ]
+}

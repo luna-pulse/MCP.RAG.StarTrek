@@ -1,0 +1,41 @@
+{
+  "document_id": "f09ae166a407a9ffbc43e406a7ead2d210f220fd4d26b086c4246a1f84169de2",
+  "source_file": "SourceFiles/Races/Раса Фучиды.txt",
+  "content_hash": "b1dbda12b9dc2314526338d3ab56143c559dff1dae88f962c565c1d0877a162a",
+  "title": "Раса Фучиды",
+  "original_title": "Fuchida's species",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-6",
+      "start_line": 4,
+      "end_line": 6,
+      "token_count": 88,
+      "body": "Раса Фучиды — инопланетная раса, обитавшая в системе Саппора в конце 2370-х годов. Представители этого вида обитали или работали на планетах Нью-Сидней и Саппора VII. (DS9: \"Prodigal Daughter\")",
+      "embedding_text": "Документ: Раса Фучиды\nТип сущности: раса\nРаздел: Общие сведения\n\nРаса Фучиды — инопланетная раса, обитавшая в системе Саппора в конце 2370-х годов. Представители этого вида обитали или работали на планетах Нью-Сидней и Саппора VII. (DS9: \"Prodigal Daughter\")"
+    },
+    {
+      "chunk_index": 2,
+      "heading_level": 4,
+      "section_path": [
+        "Отдельные представители"
+      ],
+      "section_title": "Отдельные представители",
+      "position": "lines 8-11",
+      "start_line": 8,
+      "end_line": 11,
+      "token_count": 34,
+      "body": "- Фучида\n- Список видов Фучиды",
+      "embedding_text": "Документ: Раса Фучиды\nТип сущности: раса\nРаздел: Отдельные представители\n\n- Фучида\n- Список видов Фучиды"
+    }
+  ]
+}

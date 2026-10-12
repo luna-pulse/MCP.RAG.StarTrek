@@ -1,0 +1,27 @@
+{
+  "document_id": "56affc4276f3be43ece49be172e103f7a6bd84d1478f63f6ab639a112623b60c",
+  "source_file": "SourceFiles/Races/Проксинианцы.txt",
+  "content_hash": "bab44fff8708a1ef64f3240010c556cfac8e4c1b9492c9fb72de1d3ab80c49bb",
+  "title": "Проксинианцы",
+  "original_title": "Proxcinian",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 79,
+      "body": "Проксинианцы — раса, находившаяся в состоянии войны в 2373 году.\n- Кварк продал проксинианцу 7000 штурмовых скиммеров с тритановым покрытием. (DS9: \"Business as Usual\")",
+      "embedding_text": "Документ: Проксинианцы\nТип сущности: раса\nРаздел: Общие сведения\n\nПроксинианцы — раса, находившаяся в состоянии войны в 2373 году.\n- Кварк продал проксинианцу 7000 штурмовых скиммеров с тритановым покрытием. (DS9: \"Business as Usual\")"
+    }
+  ]
+}

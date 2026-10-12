@@ -1,0 +1,55 @@
+{
+  "document_id": "c68ddcab91f3d18bee3c62fff006ed37642b40c1848a8672e0cddc3f88dd51a1",
+  "source_file": "SourceFiles/Races/Арбазанцы.txt",
+  "content_hash": "88904bf737045b180c1b48435d6a72710c8a8f7246a8f68ebc764510296e0a19",
+  "title": "Арбазанцы",
+  "original_title": "Arbazan",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-8",
+      "start_line": 4,
+      "end_line": 8,
+      "token_count": 116,
+      "body": "Арбазан — разумная гуманоидная раса, обитавшая на планете Арбазан в системе Арбазан, в Альфа-квадранте.\nРодной мир Арбазана был членом Объединенной Федерации Планет к 2369 году.\n- Посол Боли Вадосия высмеял их, назвав их «сексуально подавленным» видом. (DS9: \"The Forsaken\")",
+      "embedding_text": "Документ: Арбазанцы\nТип сущности: раса\nРаздел: Общие сведения\n\nАрбазан — разумная гуманоидная раса, обитавшая на планете Арбазан в системе Арбазан, в Альфа-квадранте.\nРодной мир Арбазана был членом Объединенной Федерации Планет к 2369 году.\n- Посол Боли Вадосия высмеял их, назвав их «сексуально подавленным» видом. (DS9: \"The Forsaken\")"
+    },
+    {
+      "chunk_index": 2,
+      "heading_level": 4,
+      "section_path": [
+        "Представители"
+      ],
+      "section_title": "Представители",
+      "position": "lines 10-12",
+      "start_line": 10,
+      "end_line": 12,
+      "token_count": 25,
+      "body": "- Таско",
+      "embedding_text": "Документ: Арбазанцы\nТип сущности: раса\nРаздел: Представители\n\n- Таско"
+    },
+    {
+      "chunk_index": 3,
+      "heading_level": 4,
+      "section_path": [
+        "См. также"
+      ],
+      "section_title": "См. также",
+      "position": "lines 14-16",
+      "start_line": 14,
+      "end_line": 16,
+      "token_count": 30,
+      "body": "- Арбазанский гриф",
+      "embedding_text": "Документ: Арбазанцы\nТип сущности: раса\nРаздел: См. также\n\n- Арбазанский гриф"
+    }
+  ]
+}

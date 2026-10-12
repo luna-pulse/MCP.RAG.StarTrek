@@ -1,0 +1,41 @@
+{
+  "document_id": "547698a81884ce290706a3c37f02e08639d5bb842c8ff1081dec0603a8c52ab1",
+  "source_file": "SourceFiles/Races/Напеанцы.txt",
+  "content_hash": "052f1d4a4342ac52e5b169445065d86257a8e4cddb331b1132d4da3de8e765cf",
+  "title": "Напеанцы",
+  "original_title": "Napean",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 245,
+      "body": "Напеанцы — частично эмпатическая раса с планеты Напеа. Их внешний вид был похож на внешний вид большинства гуманоидов, хотя у них был характерный большой листовидный лоб. Они были биологически совместимы с людьми и позволяли производить гибридное потомство. (TNG: \"Eye of the Beholder\")\nНесколько лиц напеанского происхождения были членами Звездного Флота в 2370-х и 2380-х годах, служа на борту таких кораблей, как USS Enterprise-D, USS Lexington, USS Cerritos и USS Rubidoux. (TNG: \"Eye of the Beholder\"; DS9: \"Explorers\"; LD: \"Second Contact\", \"Much Ado About Boimler\", et al.) Другой служил гражданским членом экипажа Кэсиди Йейтс на борту SS Xhosa. (DS9: \"Family Business\")",
+      "embedding_text": "Документ: Напеанцы\nТип сущности: раса\nРаздел: Общие сведения\n\nНапеанцы — частично эмпатическая раса с планеты Напеа. Их внешний вид был похож на внешний вид большинства гуманоидов, хотя у них был характерный большой листовидный лоб. Они были биологически совместимы с людьми и позволяли производить гибридное потомство. (TNG: \"Eye of the Beholder\")\nНесколько лиц напеанского происхождения были членами Звездного Флота в 2370-х и 2380-х годах, служа на борту таких кораблей, как USS Enterprise-D, USS Lexington, USS Cerritos и USS Rubidoux. (TNG: \"Eye of the Beholder\"; DS9: \"Explorers\"; LD: \"Second Contact\", \"Much Ado About Boimler\", et al.) Другой служил гражданским членом экипажа Кэсиди Йейтс на борту SS Xhosa. (DS9: \"Family Business\")"
+    },
+    {
+      "chunk_index": 2,
+      "heading_level": 4,
+      "section_path": [
+        "Представители"
+      ],
+      "section_title": "Представители",
+      "position": "lines 9-15",
+      "start_line": 9,
+      "end_line": 15,
+      "token_count": 60,
+      "body": "- Именованный\nДэниел Кван (гибрид человека и напеанцев)\n- Эмираа Кван\n- Безымянный\n- Безымянные напеане",
+      "embedding_text": "Документ: Напеанцы\nТип сущности: раса\nРаздел: Представители\n\n- Именованный\nДэниел Кван (гибрид человека и напеанцев)\n- Эмираа Кван\n- Безымянный\n- Безымянные напеане"
+    }
+  ]
+}

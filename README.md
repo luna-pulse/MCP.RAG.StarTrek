@@ -5,15 +5,15 @@
 ## Что нужно заранее
 
 - [Docker](https://www.docker.com/) (для ChromaDB);
-- SDK .NET 10 (версия в [global.json](global.json));
-- файлы модели e5 — только для команды `embed` (см. ниже).
+- SDK .NET 10 (версия в [global.json](global.json)).
 
 ## Модель эмбеддингов
 
-Файлы `tokenizer.json` и `model.onnx` должны лежать в `models/multilingual-e5-small/`. В git их нет (папка `models/` в `.gitignore`). Скачать нужно из официального репозитория Hugging Face [intfloat/multilingual-e5-small](https://huggingface.co/intfloat/multilingual-e5-small) (лицензия MIT):
+`tokenizer.json` лежит в `Models/multilingual-e5-small/` и хранится в git. Это копия модели [intfloat/multilingual-e5-small](https://huggingface.co/intfloat/multilingual-e5-small). Откуда скачаны файлы и на каких правах они используются — в [Models/LICENSE.md](Models/LICENSE.md).
 
-- [`tokenizer.json`](https://huggingface.co/intfloat/multilingual-e5-small/resolve/main/tokenizer.json) — из корня репозитория модели;
-- [`model.onnx`](https://huggingface.co/intfloat/multilingual-e5-small/resolve/main/onnx/model.onnx) — из подпапки `onnx/`.
+`Models/multilingual-e5-small/model.onnx` в git не входит: файл весит около 448 МБ. Скачайте его и сохраните по пути `Models/multilingual-e5-small/model.onnx`:
+
+<https://huggingface.co/intfloat/multilingual-e5-small/resolve/main/onnx/model.onnx>
 
 `analyze` и `chunk` работают без `model.onnx`: `chunk` нужен только `tokenizer.json` (подсчёт токенов), сам файл весов не вызывается.
 
@@ -28,7 +28,7 @@ docker compose up        # или: docker compose up -d
 Compose поднимает один сервис ChromaDB и публикует порт `8000`.
 
 - `http://127.0.0.1:8000` — локальный API ChromaDB на этом компьютере, а не сайт в интернете. Консоль отправляет в него команды «запиши чанк» и «найди ближайшие».
-- Папка [ChromaDB](ChromaDB) — файлы хранилища, их пишет контейнер. C#-пакет эту папку напрямую не открывает: запись идёт только через API. Содержимое папки в git не попадает (остаётся `.gitkeep`).
+- Папка [ChromaDB](ChromaDB) — файлы хранилища, их пишет контейнер. C#-пакет эту папку напрямую не открывает: запись идёт только через API.
 
 Консоль контейнер сама не запускает. Если API не отвечает, `embed` останавливается с сообщением, что ChromaDB не запущена.
 
@@ -73,7 +73,7 @@ flowchart LR
 - `Indexer:Bm25` — `K1 = 1.5`, `B = 0.75`;
 - `Indexer:Search` — параметры гибридного поиска (RRF).
 
-Папка `Data/` и содержимое `ChromaDB/` исключены через `.gitignore`.
+Папки `Data/` и `ChromaDB/` хранятся в репозитории. Из `Models/` в git входит `tokenizer.json`; `model.onnx` скачивается отдельно.
 
 ## Поиск
 

@@ -1,0 +1,27 @@
+{
+  "document_id": "7446936b1f3e328c485d24d41446f845849b12e1ee7f9388a80f84dde1e91302",
+  "source_file": "SourceFiles/Races/Финнеанцы.txt",
+  "content_hash": "81c78c1494572635822db8f70b53aa80bde51627119b73a9ce9f22a3d47b755d",
+  "title": "Финнеанцы",
+  "original_title": "Finnean",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 90,
+      "body": "Финнеанцы — раса гуманоидов, обитавшая на планете Финнеа Прайм.\n- Два финнеанца, Трейди и Сорм, работали на Синдикат Ориона в 2370-х годах. (DS9: \"A Simple Investigation\")",
+      "embedding_text": "Документ: Финнеанцы\nТип сущности: раса\nРаздел: Общие сведения\n\nФиннеанцы — раса гуманоидов, обитавшая на планете Финнеа Прайм.\n- Два финнеанца, Трейди и Сорм, работали на Синдикат Ориона в 2370-х годах. (DS9: \"A Simple Investigation\")"
+    }
+  ]
+}

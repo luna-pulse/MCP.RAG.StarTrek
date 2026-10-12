@@ -1,0 +1,27 @@
+{
+  "document_id": "ed4f4bbef2231f3a635fc6a73cb1a4567f933ff3bcae6cd09156b129cef62a06",
+  "source_file": "SourceFiles/Races/Раса Эм-3-Грина.txt",
+  "content_hash": "b953571576f310cd0189a1ffefd3da933f027344b0704c9c127c31d5107292bb",
+  "title": "Раса Эм-3-Грина",
+  "original_title": "Em/3/Green's species",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-8",
+      "start_line": 4,
+      "end_line": 8,
+      "token_count": 118,
+      "body": "Вид Em/3/Грина был видом инсектоидов.\nПредставители этого вида были зелеными, имели шесть рук, две ноги и широкий хвост. По словам Em/3/Green, его люди не отличались склонностью к риску. (TAS: \"The Jihad\")\n- В 2381 году несколько представителей этого вида работали на Звездной базе 25. (LD: \"An Embarrassment Of Dooplers\")",
+      "embedding_text": "Документ: Раса Эм-3-Грина\nТип сущности: раса\nРаздел: Общие сведения\n\nВид Em/3/Грина был видом инсектоидов.\nПредставители этого вида были зелеными, имели шесть рук, две ноги и широкий хвост. По словам Em/3/Green, его люди не отличались склонностью к риску. (TAS: \"The Jihad\")\n- В 2381 году несколько представителей этого вида работали на Звездной базе 25. (LD: \"An Embarrassment Of Dooplers\")"
+    }
+  ]
+}

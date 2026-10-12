@@ -1,0 +1,41 @@
+{
+  "document_id": "3fddd255ea5838ed87ce7797f0299651abd592a1c5ef88b3a3ddb4bd5622f566",
+  "source_file": "SourceFiles/Races/Вараланцы.txt",
+  "content_hash": "b47f871b8bb7d9c68d7b1a318cc2ae73301f6f223bce02b9e5387060431f049c",
+  "title": "Вараланцы",
+  "original_title": "Varalan",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 97,
+      "body": "Варалцы — гуманоидная раса, обитавшая на планете Варала.\nЛаас, один из Сотни Подменышей, жил среди варалан и принял подобную форму в 22 веке. Имя «Лаас» на вараланском языке означало «переменчивый». (DS9: \"Chimera\")",
+      "embedding_text": "Документ: Вараланцы\nТип сущности: раса\nРаздел: Общие сведения\n\nВаралцы — гуманоидная раса, обитавшая на планете Варала.\nЛаас, один из Сотни Подменышей, жил среди варалан и принял подобную форму в 22 веке. Имя «Лаас» на вараланском языке означало «переменчивый». (DS9: \"Chimera\")"
+    },
+    {
+      "chunk_index": 2,
+      "heading_level": 4,
+      "section_path": [
+        "Представители"
+      ],
+      "section_title": "Представители",
+      "position": "lines 9-11",
+      "start_line": 9,
+      "end_line": 11,
+      "token_count": 29,
+      "body": "- Безымянные вараланы",
+      "embedding_text": "Документ: Вараланцы\nТип сущности: раса\nРаздел: Представители\n\n- Безымянные вараланы"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "document_id": "1611cbabc3a3d07f2132e49ba33fd2207af42f4d2b244226be075b55bf1aba7c",
+  "source_file": "SourceFiles/Races/Жители Гаспара VII.txt",
+  "content_hash": "f946897219e51685369642ced545e0fd1cb2dd54361e3a3da5caeec9292d15bb",
+  "title": "Жители Гаспара VII",
+  "original_title": "Gaspar VII native",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-8",
+      "start_line": 4,
+      "end_line": 8,
+      "token_count": 152,
+      "body": "Гаспар VII был обитаемой седьмой планетой своей звездной системы в Альфа-квадранте.\nЭто была родная планета офицера Звездного Флота Эдвелла. По словам коммандера Хатчинсона, капитан Эдвелл не был похож на других людей с Гаспара VII. (TNG: \"Starship Mine\")\nВ 2374 году местоположение Гаспара VII было отмечено на тактической карте, выставленной в кают-компании Deep Space 9. (DS9: \"Tears of the Prophets\", okudagram)",
+      "embedding_text": "Документ: Жители Гаспара VII\nТип сущности: раса\nРаздел: Общие сведения\n\nГаспар VII был обитаемой седьмой планетой своей звездной системы в Альфа-квадранте.\nЭто была родная планета офицера Звездного Флота Эдвелла. По словам коммандера Хатчинсона, капитан Эдвелл не был похож на других людей с Гаспара VII. (TNG: \"Starship Mine\")\nВ 2374 году местоположение Гаспара VII было отмечено на тактической карте, выставленной в кают-компании Deep Space 9. (DS9: \"Tears of the Prophets\", okudagram)"
+    }
+  ]
+}

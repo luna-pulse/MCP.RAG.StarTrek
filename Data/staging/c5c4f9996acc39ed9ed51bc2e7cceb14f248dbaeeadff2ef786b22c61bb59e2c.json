@@ -1,0 +1,27 @@
+{
+  "document_id": "c5c4f9996acc39ed9ed51bc2e7cceb14f248dbaeeadff2ef786b22c61bb59e2c",
+  "source_file": "SourceFiles/Races/Казариты.txt",
+  "content_hash": "3a096f879e1bc49a3904aaacd7b87a6b3d78c292bc5bd311eb1a098f70bd7cf9",
+  "title": "Казариты",
+  "original_title": "Kazarite",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-6",
+      "start_line": 4,
+      "end_line": 6,
+      "token_count": 106,
+      "body": "Казариты были гуманоидной расой. Два казаритца присутствовали на остановке воздушного трамвая в штаб-квартире Звездного Флота в Сан-Франциско в звездную дату 7410.2 в 2273 году. Один вошел в турболифт, а другой сел в воздушный трамвай. (Star Trek: The Motion Picture)",
+      "embedding_text": "Документ: Казариты\nТип сущности: раса\nРаздел: Общие сведения\n\nКазариты были гуманоидной расой. Два казаритца присутствовали на остановке воздушного трамвая в штаб-квартире Звездного Флота в Сан-Франциско в звездную дату 7410.2 в 2273 году. Один вошел в турболифт, а другой сел в воздушный трамвай. (Star Trek: The Motion Picture)"
+    }
+  ]
+}

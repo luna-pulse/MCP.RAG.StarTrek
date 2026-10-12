@@ -1,0 +1,27 @@
+{
+  "document_id": "1f117f8beeddc3b91a7ca1dd9bdad1d67c10306d1ecbe1cd8799ca13f8240ef5",
+  "source_file": "SourceFiles/Races/Зевианцы.txt",
+  "content_hash": "3c9bec66d51740d5ca15f43fb689040aad0b5de347ad891366400ac04a30155f",
+  "title": "Зевианцы",
+  "original_title": "Zevian",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 66,
+      "body": "Зевианцы были расой.\nВ 2374 году зевианские власти запросили информацию о банде контрабандистов в офисе безопасности Deep Space 9. (DS9: \"His Way\")",
+      "embedding_text": "Документ: Зевианцы\nТип сущности: раса\nРаздел: Общие сведения\n\nЗевианцы были расой.\nВ 2374 году зевианские власти запросили информацию о банде контрабандистов в офисе безопасности Deep Space 9. (DS9: \"His Way\")"
+    }
+  ]
+}

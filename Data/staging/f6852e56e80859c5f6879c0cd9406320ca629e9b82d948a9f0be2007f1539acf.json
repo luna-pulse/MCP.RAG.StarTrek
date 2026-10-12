@@ -1,0 +1,41 @@
+{
+  "document_id": "f6852e56e80859c5f6879c0cd9406320ca629e9b82d948a9f0be2007f1539acf",
+  "source_file": "SourceFiles/Races/Раса Абдона.txt",
+  "content_hash": "afd1a763a1aee39e62e4f6281cfb0e7322145ab9bd02806a212b74e40337a6e3",
+  "title": "Раса Абдона",
+  "original_title": "Abdon's species",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 128,
+      "body": "Раса Абдона — гуманоидная раса, известная Федерации до 2373 года. Среди их характеристик были розоватая кожа и безволосый, ребристый скальп. (DS9: \"Apocalypse Rising\", \"The Assignment\")\nПредставитель этого вида, Абдон, служил в составе Звездного Флота на борту Deep Space 9 в 2370-х годах. (DS9: \"The Assignment\")",
+      "embedding_text": "Документ: Раса Абдона\nТип сущности: раса\nРаздел: Общие сведения\n\nРаса Абдона — гуманоидная раса, известная Федерации до 2373 года. Среди их характеристик были розоватая кожа и безволосый, ребристый скальп. (DS9: \"Apocalypse Rising\", \"The Assignment\")\nПредставитель этого вида, Абдон, служил в составе Звездного Флота на борту Deep Space 9 в 2370-х годах. (DS9: \"The Assignment\")"
+    },
+    {
+      "chunk_index": 2,
+      "heading_level": 4,
+      "section_path": [
+        "Представители вида"
+      ],
+      "section_title": "Представители вида",
+      "position": "lines 9-14",
+      "start_line": 9,
+      "end_line": 14,
+      "token_count": 42,
+      "body": "- Именованный\n- Абдон\n- Безымянный\n- Список видов Абдона",
+      "embedding_text": "Документ: Раса Абдона\nТип сущности: раса\nРаздел: Представители вида\n\n- Именованный\n- Абдон\n- Безымянный\n- Список видов Абдона"
+    }
+  ]
+}

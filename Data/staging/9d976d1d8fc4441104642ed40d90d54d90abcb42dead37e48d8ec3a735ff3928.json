@@ -1,0 +1,41 @@
+{
+  "document_id": "9d976d1d8fc4441104642ed40d90d54d90abcb42dead37e48d8ec3a735ff3928",
+  "source_file": "SourceFiles/Races/Зелониты.txt",
+  "content_hash": "d6cac9481295300844a227ff465d6925923e814febe12c7eca69267bba6b4f0c",
+  "title": "Зелониты",
+  "original_title": "Zelonite",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 98,
+      "body": "Зелониты — гуманоидная раса, отличавшаяся по внешнему виду синей кожей и высоким ростом.\nОни присоединились к Объединенной Федерации Планет незадолго до конца 23 века и в 2293 году присутствовали на Хитомерской конференции. (Star Trek VI: The Undiscovered Country)",
+      "embedding_text": "Документ: Зелониты\nТип сущности: раса\nРаздел: Общие сведения\n\nЗелониты — гуманоидная раса, отличавшаяся по внешнему виду синей кожей и высоким ростом.\nОни присоединились к Объединенной Федерации Планет незадолго до конца 23 века и в 2293 году присутствовали на Хитомерской конференции. (Star Trek VI: The Undiscovered Country)"
+    },
+    {
+      "chunk_index": 2,
+      "heading_level": 4,
+      "section_path": [
+        "Представители"
+      ],
+      "section_title": "Представители",
+      "position": "lines 9-11",
+      "start_line": 9,
+      "end_line": 11,
+      "token_count": 29,
+      "body": "- Безымянные зелениты",
+      "embedding_text": "Документ: Зелониты\nТип сущности: раса\nРаздел: Представители\n\n- Безымянные зелениты"
+    }
+  ]
+}

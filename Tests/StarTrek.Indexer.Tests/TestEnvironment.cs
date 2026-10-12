@@ -15,10 +15,10 @@ internal static class TestEnvironment
         AppContext.BaseDirectory);
 
     public static string TokenizerPath =>
-        Path.Combine(RepositoryRoot, "models", "multilingual-e5-small", "tokenizer.json");
+        Path.Combine(RepositoryRoot, "Models", "multilingual-e5-small", "tokenizer.json");
 
     public static string EmbeddingModelPath =>
-        Path.Combine(RepositoryRoot, "models", "multilingual-e5-small", "model.onnx");
+        Path.Combine(RepositoryRoot, "Models", "multilingual-e5-small", "model.onnx");
 
     public static E5Tokenizer Tokenizer => SharedTokenizer.Value;
 

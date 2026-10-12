@@ -1,0 +1,41 @@
+{
+  "document_id": "6fce7f754f1dc8eb22e2ad5762c13ab681bc7fe49936172f67efde21528b92cc",
+  "source_file": "SourceFiles/Races/Раса Золана.txt",
+  "content_hash": "eb0e891d9ab523be9eb92fec7cff1f2a845ac0f0d525bf3d09f3aa3109c7251f",
+  "title": "Раса Золана",
+  "original_title": "Zolan's species",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 117,
+      "body": "Раса Золана представляла собой космическую гуманоидную расу, отличавшуюся округлыми структурами лба и широкими увеличенными ноздрями, и обитала в Альфа- или Бета-квадранте.\n- Их часто видели посещающими Deep Space 9 в 2370-х годах. (DS9: \"Cardassians\", \"The Abandoned\", \"In the Cards\")",
+      "embedding_text": "Документ: Раса Золана\nТип сущности: раса\nРаздел: Общие сведения\n\nРаса Золана представляла собой космическую гуманоидную расу, отличавшуюся округлыми структурами лба и широкими увеличенными ноздрями, и обитала в Альфа- или Бета-квадранте.\n- Их часто видели посещающими Deep Space 9 в 2370-х годах. (DS9: \"Cardassians\", \"The Abandoned\", \"In the Cards\")"
+    },
+    {
+      "chunk_index": 2,
+      "heading_level": 4,
+      "section_path": [
+        "Представители"
+      ],
+      "section_title": "Представители",
+      "position": "lines 9-11",
+      "start_line": 9,
+      "end_line": 11,
+      "token_count": 30,
+      "body": "- См.: Список видов Золана",
+      "embedding_text": "Документ: Раса Золана\nТип сущности: раса\nРаздел: Представители\n\n- См.: Список видов Золана"
+    }
+  ]
+}

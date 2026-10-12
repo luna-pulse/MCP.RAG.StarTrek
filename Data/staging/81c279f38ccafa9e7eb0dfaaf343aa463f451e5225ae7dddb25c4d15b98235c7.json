@@ -1,0 +1,41 @@
+{
+  "document_id": "81c279f38ccafa9e7eb0dfaaf343aa463f451e5225ae7dddb25c4d15b98235c7",
+  "source_file": "SourceFiles/Races/Жители Сигмы Дракона VI.txt",
+  "content_hash": "0056c108245d91d4affc850c7c00665094571532ef6adec7b6a41c523cbd80c1",
+  "title": "Жители Сигмы Дракона VI",
+  "original_title": "Sigma Draconis VI native",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-6",
+      "start_line": 4,
+      "end_line": 6,
+      "token_count": 102,
+      "body": "Уроженцы Сигмы Дракониса VI были ретроградной цивилизацией, состоящей из двух групп гуманоидов, моргов и эйморгов. Морги были жителями мужского пола, а Эйморги — особями женского пола на этой планете. (TOS: \"Spock's Brain\")",
+      "embedding_text": "Документ: Жители Сигмы Дракона VI\nТип сущности: раса\nРаздел: Общие сведения\n\nУроженцы Сигмы Дракониса VI были ретроградной цивилизацией, состоящей из двух групп гуманоидов, моргов и эйморгов. Морги были жителями мужского пола, а Эйморги — особями женского пола на этой планете. (TOS: \"Spock's Brain\")"
+    },
+    {
+      "chunk_index": 2,
+      "heading_level": 4,
+      "section_path": [
+        "Представители"
+      ],
+      "section_title": "Представители",
+      "position": "lines 8-10",
+      "start_line": 8,
+      "end_line": 10,
+      "token_count": 41,
+      "body": "- См.: Туземцы Сигмы Дракониса VI",
+      "embedding_text": "Документ: Жители Сигмы Дракона VI\nТип сущности: раса\nРаздел: Представители\n\n- См.: Туземцы Сигмы Дракониса VI"
+    }
+  ]
+}

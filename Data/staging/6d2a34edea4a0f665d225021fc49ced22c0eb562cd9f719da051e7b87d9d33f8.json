@@ -1,0 +1,27 @@
+{
+  "document_id": "6d2a34edea4a0f665d225021fc49ced22c0eb562cd9f719da051e7b87d9d33f8",
+  "source_file": "SourceFiles/Races/Пелджениты.txt",
+  "content_hash": "82239f05f97ae8441f61071c9f5138bcddd56cd4cf98b464e70601d998c52fae",
+  "title": "Пелджениты",
+  "original_title": "Peljenite",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 91,
+      "body": "Пельениты были расой, путешествующей в космосе.\nВ 2371 году Бенджамину Сиско удалось убедить их обменяться послами с Объединенной Федерацией Планет. Успех с пельенчанами поднял Сиско хорошее настроение. (DS9: \"Family Business\")",
+      "embedding_text": "Документ: Пелджениты\nТип сущности: раса\nРаздел: Общие сведения\n\nПельениты были расой, путешествующей в космосе.\nВ 2371 году Бенджамину Сиско удалось убедить их обменяться послами с Объединенной Федерацией Планет. Успех с пельенчанами поднял Сиско хорошее настроение. (DS9: \"Family Business\")"
+    }
+  ]
+}

@@ -131,6 +131,6 @@ public sealed class E5TokenizerTests
             Environment.CurrentDirectory,
             AppContext.BaseDirectory);
         return new E5Tokenizer(
-            Path.Combine(root, "models", "multilingual-e5-small", "tokenizer.json"));
+            Path.Combine(root, "Models", "multilingual-e5-small", "tokenizer.json"));
     }
 }

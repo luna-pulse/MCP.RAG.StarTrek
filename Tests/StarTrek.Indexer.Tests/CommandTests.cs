@@ -128,7 +128,7 @@ public sealed class CommandTests
                 {
                     Corpus = "SourceFiles",
                     Staging = "Data/staging",
-                    EmbeddingModel = Path.Combine(repositoryRoot, "models", "multilingual-e5-small"),
+                    EmbeddingModel = Path.Combine(repositoryRoot, "Models", "multilingual-e5-small"),
                     Bm25Corpus = "Data/bm25/corpus.json"
                 });
             var options = Options.Create(new IndexerOptions

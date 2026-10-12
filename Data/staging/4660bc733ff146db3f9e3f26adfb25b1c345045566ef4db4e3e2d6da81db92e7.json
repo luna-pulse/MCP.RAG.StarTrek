@@ -1,0 +1,27 @@
+{
+  "document_id": "4660bc733ff146db3f9e3f26adfb25b1c345045566ef4db4e3e2d6da81db92e7",
+  "source_file": "SourceFiles/Races/Ригеллианцы.txt",
+  "content_hash": "06e1b0f4e16a4b781d5a78d1d0b4c46cef4e3ead2b80ffad281f0d452eb963f3",
+  "title": "Ригеллианцы",
+  "original_title": "Rigellian",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-6",
+      "start_line": 4,
+      "end_line": 6,
+      "token_count": 55,
+      "body": "- Ригелианцы были разновидностью разумных черепахоподобных гуманоидов. (Star Trek: The Motion Picture)",
+      "embedding_text": "Документ: Ригеллианцы\nТип сущности: раса\nРаздел: Общие сведения\n\n- Ригелианцы были разновидностью разумных черепахоподобных гуманоидов. (Star Trek: The Motion Picture)"
+    }
+  ]
+}

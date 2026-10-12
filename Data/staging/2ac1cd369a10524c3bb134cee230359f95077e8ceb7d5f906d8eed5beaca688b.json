@@ -1,0 +1,27 @@
+{
+  "document_id": "2ac1cd369a10524c3bb134cee230359f95077e8ceb7d5f906d8eed5beaca688b",
+  "source_file": "SourceFiles/Races/В'радианцы.txt",
+  "content_hash": "7b82bebedf1dd3e6aaff29b494378933bcfae41a4f4b707821199c93e99cbbb5",
+  "title": "В'радианцы",
+  "original_title": "V'radian",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-8",
+      "start_line": 4,
+      "end_line": 8,
+      "token_count": 103,
+      "body": "В'радианцы — раса гуманоидов, обитавшая в Дельфийском пространстве.\n- Б'Рат Уд был в'радианцем. (ENT: \"Rajiin\")\n- В'радианца также держали в плену на невольничьем рынке Верекса III. (ENT: \"Borderland\")",
+      "embedding_text": "Документ: В'радианцы\nТип сущности: раса\nРаздел: Общие сведения\n\nВ'радианцы — раса гуманоидов, обитавшая в Дельфийском пространстве.\n- Б'Рат Уд был в'радианцем. (ENT: \"Rajiin\")\n- В'радианца также держали в плену на невольничьем рынке Верекса III. (ENT: \"Borderland\")"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "document_id": "fe693647076063003003cb039728618a0d519acfcfd1f533adb910fd1a28f334",
+  "source_file": "SourceFiles/Races/Питроны.txt",
+  "content_hash": "1df573604ed7b312fbc1f34b622d7288451ac6862d233737577ead7c72dde9ea",
+  "title": "Питроны",
+  "original_title": "Pythron",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 69,
+      "body": "Питроны были жителями Питро V.\nВ 2370 году мошенник Мартус Мазур встретил пожилую пару Питронов, с которыми у него были финансовые дела. (DS9: \"Rivals\")",
+      "embedding_text": "Документ: Питроны\nТип сущности: раса\nРаздел: Общие сведения\n\nПитроны были жителями Питро V.\nВ 2370 году мошенник Мартус Мазур встретил пожилую пару Питронов, с которыми у него были финансовые дела. (DS9: \"Rivals\")"
+    }
+  ]
+}

@@ -15,7 +15,7 @@ public sealed class ConfigurationTests
         {
             Corpus = "SourceFiles",
             Staging = "Data/staging",
-            EmbeddingModel = "models/multilingual-e5-small",
+            EmbeddingModel = "Models/multilingual-e5-small",
             Bm25Corpus = "Data/bm25/corpus.json"
         };
 
@@ -24,7 +24,7 @@ public sealed class ConfigurationTests
         Assert.Equal(Path.Combine(root, "SourceFiles"), paths.Corpus);
         Assert.Equal(Path.Combine(root, "Data", "staging"), paths.Staging);
         Assert.Equal(
-            Path.Combine(root, "models", "multilingual-e5-small", "tokenizer.json"),
+            Path.Combine(root, "Models", "multilingual-e5-small", "tokenizer.json"),
             paths.TokenizerFile);
         Assert.All(
             [paths.Corpus, paths.Staging, paths.EmbeddingModel, paths.Bm25Corpus],

@@ -1,0 +1,27 @@
+{
+  "document_id": "6c5b5ecbcb0f2dc7b95cc30f3d8d66bd7e062b6169265bcecc806a1a7596c659",
+  "source_file": "SourceFiles/Races/Итениты.txt",
+  "content_hash": "76a2c97a8490ca72a8996e3a238fe049bea5f71bf679ab7a07e8661ea3c43cd0",
+  "title": "Итениты",
+  "original_title": "Ithenite",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 99,
+      "body": "Ифениты — вид, который, по словам временного агента Дэниелса, присоединился к Федерации незадолго до 26 века. (ENT: \"Azati Prime\")\n- По крайней мере, одна винокурня принадлежала ифинитам по состоянию на 2261 год. (SNW: \"The Sehlat Who Ate Its Tail\")",
+      "embedding_text": "Документ: Итениты\nТип сущности: раса\nРаздел: Общие сведения\n\nИфениты — вид, который, по словам временного агента Дэниелса, присоединился к Федерации незадолго до 26 века. (ENT: \"Azati Prime\")\n- По крайней мере, одна винокурня принадлежала ифинитам по состоянию на 2261 год. (SNW: \"The Sehlat Who Ate Its Tail\")"
+    }
+  ]
+}

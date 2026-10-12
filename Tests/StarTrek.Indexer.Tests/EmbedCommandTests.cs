@@ -29,7 +29,7 @@ public sealed class EmbedCommandTests : IDisposable
             root,
             Path.Combine(root, "SourceFiles"),
             Path.Combine(root, "Data", "staging"),
-            Path.Combine(root, "models", "multilingual-e5-small"),
+            Path.Combine(root, "Models", "multilingual-e5-small"),
             Path.Combine(root, "Data", "bm25", "corpus.json"));
         store = new ChunkStagingStore(paths.Staging);
         Directory.CreateDirectory(paths.EmbeddingModel);

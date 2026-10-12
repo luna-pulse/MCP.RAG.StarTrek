@@ -1,0 +1,41 @@
+{
+  "document_id": "a2f5cffeef21844f694d6f153e85c67a0879f8d3235f3144a5ef123cf854acc1",
+  "source_file": "SourceFiles/Races/Бетарианцы.txt",
+  "content_hash": "d81281a6422654b3fb7e8dd444548e15469bdcaf8a6580db0c69dbcf84f18a02",
+  "title": "Бетарианцы",
+  "original_title": "Betarian",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 93,
+      "body": "Бетарианцы были гуманоидной расой. Они были похожи на людей, но имели жабры по бокам лица.\nСреди жителей шахтерской колонии Корван II в 2256 году были бетарианцы. (DIS: \"The Butcher's Knife Cares Not for the Lamb's Cry\")",
+      "embedding_text": "Документ: Бетарианцы\nТип сущности: раса\nРаздел: Общие сведения\n\nБетарианцы были гуманоидной расой. Они были похожи на людей, но имели жабры по бокам лица.\nСреди жителей шахтерской колонии Корван II в 2256 году были бетарианцы. (DIS: \"The Butcher's Knife Cares Not for the Lamb's Cry\")"
+    },
+    {
+      "chunk_index": 2,
+      "heading_level": 4,
+      "section_path": [
+        "Представители"
+      ],
+      "section_title": "Представители",
+      "position": "lines 9-11",
+      "start_line": 9,
+      "end_line": 11,
+      "token_count": 34,
+      "body": "- См.: Безымянные бетарианцы",
+      "embedding_text": "Документ: Бетарианцы\nТип сущности: раса\nРаздел: Представители\n\n- См.: Безымянные бетарианцы"
+    }
+  ]
+}

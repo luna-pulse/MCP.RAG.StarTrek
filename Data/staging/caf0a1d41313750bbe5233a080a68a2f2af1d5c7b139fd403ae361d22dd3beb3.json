@@ -1,0 +1,27 @@
+{
+  "document_id": "caf0a1d41313750bbe5233a080a68a2f2af1d5c7b139fd403ae361d22dd3beb3",
+  "source_file": "SourceFiles/Races/Жители Сигмы Дракона III.txt",
+  "content_hash": "908cccb8c7793e2501e9e4f1671b00dbf6bd3713292992d4f62c1835a93bab6d",
+  "title": "Жители Сигмы Дракона III",
+  "original_title": "Sigma Draconis III native",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 109,
+      "body": "Туземцы Сигмы Дракониса III — раса, обитавшая на планете Сигма Драконис III до космических полетов.\nВ 2268 году цивилизация туземцев имела рейтинг B по промышленному масштабу Федерации – примерно земной эквивалент 1485 – и технологический рейтинг три. (TOS: \"Spock's Brain\")",
+      "embedding_text": "Документ: Жители Сигмы Дракона III\nТип сущности: раса\nРаздел: Общие сведения\n\nТуземцы Сигмы Дракониса III — раса, обитавшая на планете Сигма Драконис III до космических полетов.\nВ 2268 году цивилизация туземцев имела рейтинг B по промышленному масштабу Федерации – примерно земной эквивалент 1485 – и технологический рейтинг три. (TOS: \"Spock's Brain\")"
+    }
+  ]
+}

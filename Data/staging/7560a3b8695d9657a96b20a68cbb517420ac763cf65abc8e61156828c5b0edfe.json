@@ -1,0 +1,27 @@
+{
+  "document_id": "7560a3b8695d9657a96b20a68cbb517420ac763cf65abc8e61156828c5b0edfe",
+  "source_file": "SourceFiles/Races/Бизаллианцы.txt",
+  "content_hash": "d9728458ed3313cc0bc85c9467dd77bd998da4afb9eb4f3de17e2f9e568c77ba",
+  "title": "Бизаллианцы",
+  "original_title": "Byzallian",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 91,
+      "body": "Визаллийцы были инопланетным видом.\nВ 2371 году они планировали провести неустановленную конференцию на Deep Space 9. В какой-то момент они связались с космической станцией и сказали, что хотят перенести мероприятие на неделю. (DS9: \"Defiant\")",
+      "embedding_text": "Документ: Бизаллианцы\nТип сущности: раса\nРаздел: Общие сведения\n\nВизаллийцы были инопланетным видом.\nВ 2371 году они планировали провести неустановленную конференцию на Deep Space 9. В какой-то момент они связались с космической станцией и сказали, что хотят перенести мероприятие на неделю. (DS9: \"Defiant\")"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "document_id": "6e1ae7e3eda3b87a3fdab0bcdf37ecc75c190ae661418eb9108107717a184003",
+  "source_file": "SourceFiles/Races/Урсиноиды.txt",
+  "content_hash": "5f657a2fcdafa6c91af70531045851e833c416693f8b5f0380ad38c38f6f1a5f",
+  "title": "Урсиноиды",
+  "original_title": "Ursinoid",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 88,
+      "body": "Урсиноиды были медвежьими гуманоидами с большими клыками и полностью покрытыми мехом.\n- По крайней мере два урсиноида работали шахтерами на планете Мазерлод в 2269 году. (TAS: \"Mudd's Passion\")",
+      "embedding_text": "Документ: Урсиноиды\nТип сущности: раса\nРаздел: Общие сведения\n\nУрсиноиды были медвежьими гуманоидами с большими клыками и полностью покрытыми мехом.\n- По крайней мере два урсиноида работали шахтерами на планете Мазерлод в 2269 году. (TAS: \"Mudd's Passion\")"
+    }
+  ]
+}

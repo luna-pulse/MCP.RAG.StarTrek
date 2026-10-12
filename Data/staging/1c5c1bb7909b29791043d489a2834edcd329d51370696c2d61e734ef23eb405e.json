@@ -1,0 +1,41 @@
+{
+  "document_id": "1c5c1bb7909b29791043d489a2834edcd329d51370696c2d61e734ef23eb405e",
+  "source_file": "SourceFiles/Races/Андоранцы.txt",
+  "content_hash": "9bc5347c773271b830a0d996a3bdb0d4a1a07b2807eba8c9c400474020fc00a2",
+  "title": "Андоранцы",
+  "original_title": "Andoran",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-8",
+      "start_line": 4,
+      "end_line": 8,
+      "token_count": 104,
+      "body": "Андорцы были гуманоидной расой с шестью пальцами на каждой руке.\n- Один из представителей этого вида, Колос, посетил Deep Space 9 на аукционе в 2369 году. (DS9: \"Q-Less\")\n- Другой присутствовал в баре на Дессике II в 2370 году. (TNG: \"Gambit, Part I\")",
+      "embedding_text": "Документ: Андоранцы\nТип сущности: раса\nРаздел: Общие сведения\n\nАндорцы были гуманоидной расой с шестью пальцами на каждой руке.\n- Один из представителей этого вида, Колос, посетил Deep Space 9 на аукционе в 2369 году. (DS9: \"Q-Less\")\n- Другой присутствовал в баре на Дессике II в 2370 году. (TNG: \"Gambit, Part I\")"
+    },
+    {
+      "chunk_index": 2,
+      "heading_level": 4,
+      "section_path": [
+        "Отдельные представители"
+      ],
+      "section_title": "Отдельные представители",
+      "position": "lines 10-15",
+      "start_line": 10,
+      "end_line": 15,
+      "token_count": 42,
+      "body": "- Именованный\n- Колос\n- Безымянный\n- Безымянные андорцы",
+      "embedding_text": "Документ: Андоранцы\nТип сущности: раса\nРаздел: Отдельные представители\n\n- Именованный\n- Колос\n- Безымянный\n- Безымянные андорцы"
+    }
+  ]
+}

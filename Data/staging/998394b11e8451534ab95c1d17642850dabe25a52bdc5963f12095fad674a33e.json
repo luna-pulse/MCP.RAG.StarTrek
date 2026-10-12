@@ -1,0 +1,27 @@
+{
+  "document_id": "998394b11e8451534ab95c1d17642850dabe25a52bdc5963f12095fad674a33e",
+  "source_file": "SourceFiles/Races/Литасианцы.txt",
+  "content_hash": "de804b7ddebd6e5e038d1cef99dcd1c798762206663682607c9d2092a37aaaa7",
+  "title": "Литасианцы",
+  "original_title": "Lytasian",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-7",
+      "start_line": 4,
+      "end_line": 7,
+      "token_count": 91,
+      "body": "Литазианцы — раса, обитавшая в системе Литасия, Альфа-квадрант.\n- 273 литасианца сразились с десятью ференги в битве при Прешнаке и одержали победу. (DS9: \"The Magnificent Ferengi\")",
+      "embedding_text": "Документ: Литасианцы\nТип сущности: раса\nРаздел: Общие сведения\n\nЛитазианцы — раса, обитавшая в системе Литасия, Альфа-квадрант.\n- 273 литасианца сразились с десятью ференги в битве при Прешнаке и одержали победу. (DS9: \"The Magnificent Ferengi\")"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "document_id": "58d22dea4d0144fe02c301ace0b23bc814dd6d66ca80d9965fc418442512ee14",
+  "source_file": "SourceFiles/Races/Паламарианцы.txt",
+  "content_hash": "642ba5bf961eb8abb925a8d2974fe27e07739104035eca280f57901013198b3a",
+  "title": "Паламарианцы",
+  "original_title": "Palamarian",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-6",
+      "start_line": 4,
+      "end_line": 6,
+      "token_count": 70,
+      "body": "Паламарцы — гуманоидная раса, обитающая на Паламаре. В 2373 году они были вовлечены в жестокую гражданскую войну. (DS9: \"Business as Usual\")",
+      "embedding_text": "Документ: Паламарианцы\nТип сущности: раса\nРаздел: Общие сведения\n\nПаламарцы — гуманоидная раса, обитающая на Паламаре. В 2373 году они были вовлечены в жестокую гражданскую войну. (DS9: \"Business as Usual\")"
+    },
+    {
+      "chunk_index": 2,
+      "heading_level": 4,
+      "section_path": [
+        "Представители"
+      ],
+      "section_title": "Представители",
+      "position": "lines 8-11",
+      "start_line": 8,
+      "end_line": 11,
+      "token_count": 33,
+      "body": "- Нассук\n- Регент Паламара",
+      "embedding_text": "Документ: Паламарианцы\nТип сущности: раса\nРаздел: Представители\n\n- Нассук\n- Регент Паламара"
+    }
+  ]
+}

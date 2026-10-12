@@ -1,0 +1,27 @@
+{
+  "document_id": "ef6d79e96a4683a79c33837afd7d5ffc010ef7e0392010dd414727ff2f5638e6",
+  "source_file": "SourceFiles/Races/Вериллианцы.txt",
+  "content_hash": "bb16a0309982c1541222ec677daa70c65191bff0ef5d75f58cd8d7a641c08ffa",
+  "title": "Вериллианцы",
+  "original_title": "Verillian",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-6",
+      "start_line": 4,
+      "end_line": 6,
+      "token_count": 82,
+      "body": "Вериллианцы — группа, подписавшая соглашение с Консорциумом Метрон в 2373 году. Хагат также был заинтересован в сделке, но его соратник Фарракк даже не начал переговоры. (DS9: \"Business as Usual\")",
+      "embedding_text": "Документ: Вериллианцы\nТип сущности: раса\nРаздел: Общие сведения\n\nВериллианцы — группа, подписавшая соглашение с Консорциумом Метрон в 2373 году. Хагат также был заинтересован в сделке, но его соратник Фарракк даже не начал переговоры. (DS9: \"Business as Usual\")"
+    }
+  ]
+}

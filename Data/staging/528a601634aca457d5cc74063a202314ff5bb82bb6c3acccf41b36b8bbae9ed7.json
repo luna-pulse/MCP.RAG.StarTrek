@@ -1,0 +1,27 @@
+{
+  "document_id": "528a601634aca457d5cc74063a202314ff5bb82bb6c3acccf41b36b8bbae9ed7",
+  "source_file": "SourceFiles/Races/Зора Фел.txt",
+  "content_hash": "60459012269dbdc7827e78cd9dd4f01e0250cd3584bbc53b06798179c399ddbb",
+  "title": "Зора Фел",
+  "original_title": "Zora Fel",
+  "entity_type": "race",
+  "franchise": "Star Trek",
+  "language": "ru",
+  "file_type": "txt",
+  "chunks": [
+    {
+      "chunk_index": 1,
+      "heading_level": 4,
+      "section_path": [
+        "Общие сведения"
+      ],
+      "section_title": "Общие сведения",
+      "position": "lines 4-6",
+      "start_line": 4,
+      "end_line": 6,
+      "token_count": 65,
+      "body": "Зора Фел — древние враги клингонов, которых победил великий клингонский воин Рюрик Проклятый. (DS9: \"Apocalypse Rising\")",
+      "embedding_text": "Документ: Зора Фел\nТип сущности: раса\nРаздел: Общие сведения\n\nЗора Фел — древние враги клингонов, которых победил великий клингонский воин Рюрик Проклятый. (DS9: \"Apocalypse Rising\")"
+    }
+  ]
+}
