@@ -1,0 +1,9 @@
+services:
+  chromadb:
+    image: chromadb/chroma:1.5.9
+    container_name: startrek-chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ChromaDB:/data
+    restart: unless-stopped
