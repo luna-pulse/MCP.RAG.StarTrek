@@ -17,6 +17,7 @@ public sealed class CommandDispatcher(IServiceProvider serviceProvider)
             "analyze" => Analyze(arguments.Skip(1).ToList()),
             "chunk" => Chunk(arguments.Skip(1).ToList()),
             "embed" => Embed(arguments.Skip(1).ToList()),
+            "health-check" => HealthCheck(),
             "help" or "--help" or "-h" => PrintHelpAndSucceed(),
             _ => UnknownCommand(arguments[0])
         };
@@ -67,6 +68,12 @@ public sealed class CommandDispatcher(IServiceProvider serviceProvider)
             .GetResult();
     }
 
+    private static int HealthCheck()
+    {
+        Console.WriteLine("Индексатор отвечает: healthy.");
+        return 0;
+    }
+
     private static int UnknownCommand(string command)
     {
         Console.Error.WriteLine($"Неизвестная команда: {command}");
@@ -89,5 +96,6 @@ public sealed class CommandDispatcher(IServiceProvider serviceProvider)
         Console.WriteLine($"           {ChunkCommand.ForceOption}  пересобрать все файлы, даже с тем же content_hash");
         Console.WriteLine("  embed    Посчитать векторы и записать чанки в ChromaDB (ChromaDB должна быть запущена)");
         Console.WriteLine($"           {EmbedCommand.ForceOption}  перезаписать все карточки, даже с тем же content_hash");
+        Console.WriteLine("  health-check  Проверить, что процесс индексатора запускается и отвечает");
     }
 }

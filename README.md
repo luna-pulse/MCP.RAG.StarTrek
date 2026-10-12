@@ -1,11 +1,48 @@
 # MCP.RAG.StarTrek
 
-Консольный индексатор корпуса `SourceFiles` (Star Trek, русский язык) на C# / .NET 10: нарезка по решёткам, локальные эмбеддинги `intfloat/multilingual-e5-small` через ONNX Runtime, коллекция в ChromaDB и индекс BM25. Python в решении нет. Подробности и обоснования — в [Docs/6. Plan.md](Docs/6.%20Plan.md).
+Консольный индексатор корпуса `SourceFiles` (Star Trek, русский язык) на C# / .NET 10: нарезка по решёткам, локальные эмбеддинги `intfloat/multilingual-e5-small` через ONNX Runtime, коллекция в ChromaDB и индекс BM25. Python в решении нет. Подробности и обоснования — в [Docs/6. Plan.md](Docs/6.%20Plan.md). Запуск индексатора в Docker — в [Docs/7. План запуска в Docker.md](Docs/7.%20План%20запуска%20в%20Docker.md).
 
 ## Что нужно заранее
 
-- [Docker](https://www.docker.com/) (для ChromaDB);
-- SDK .NET 10 (версия в [global.json](global.json)).
+- **С Docker** — [Docker](https://www.docker.com/) (ChromaDB и образ `startrek-indexer`); SDK на хосте не нужен;
+- **Без Docker** — SDK .NET 10 (версия в [global.json](global.json));
+- ONNX-модель `model.onnx` (~448 МБ): [скачать](https://huggingface.co/intfloat/multilingual-e5-small/resolve/main/onnx/model.onnx) в `Models/multilingual-e5-small/` (нужна для `embed`).
+
+## Запуск
+
+### 1. Запуск индексатора
+
+`health-check` и `help` не требуют ChromaDB; `embed` — требует (контейнер `startrek-chromadb`). `docker compose up` корпус не индексирует: у сервиса `indexer` по умолчанию `health-check`.
+
+#### С Docker
+
+SDK на хосте не нужен. Образ и контейнер — `startrek-indexer`. Проверка образа:
+
+```powershell
+docker compose build indexer
+docker compose run --rm -T --no-deps indexer health-check
+```
+
+`--no-deps` не поднимает ChromaDB. Другие команды индексатора — после имени сервиса: `docker compose run --rm -T indexer <команда>` (`analyze`, `chunk`, `embed`).
+
+#### Без Docker
+
+Нужен SDK .NET 10.
+
+```powershell
+dotnet run --project src/StarTrek.Indexer -- <команда>
+```
+
+| Команда | Что делает |
+|---|---|
+| `analyze` | Только печатает отчёт: файлы, уровни заголовков, пустые блоки, разделы длиннее 480 и короче 80 токенов (`--all` — показать все, а не первые 20). Ничего не пишет. |
+| `chunk` | Режет файлы по решёткам и пишет JSON в `Data/staging/` без векторов. Файлы с тем же `content_hash` пропускает (`--force` — переделать все). В ChromaDB ничего не кладёт. |
+| `embed` | Читает `Data/staging/`, считает векторы e5 ONNX, пишет (upsert) чанки в коллекцию `startrek` и пересобирает индекс BM25 (корпус сохраняется в `Data/bm25/corpus.json`). Без модели или без ответа ChromaDB останавливается, уже записанное не трогает. `--force` — пересчитать всё. |
+| `health-check` | Печатает `Индексатор отвечает: healthy.` и возвращает код 0. Не читает корпус, не грузит ONNX и не вызывает ChromaDB. |
+| `help` | Печатает список команд и завершается с кодом 0. |
+
+### 2. Запуск MCP-сервера
+... в разработке ... 
 
 ## Модель эмбеддингов
 
@@ -15,7 +52,7 @@
 
 <https://huggingface.co/intfloat/multilingual-e5-small/resolve/main/onnx/model.onnx>
 
-`analyze` и `chunk` работают без `model.onnx`: `chunk` нужен только `tokenizer.json` (подсчёт токенов), сам файл весов не вызывается.
+`analyze`, `chunk` и `health-check` работают без `model.onnx`: `chunk` нужен только `tokenizer.json` (подсчёт токенов), сам файл весов не вызывается.
 
 При индексации E5 получает служебный префикс `passage: `, а при поисковом запросе — `query: `. В ChromaDB хранится текст без этого префикса. Эмбеддинги вычисляются локально, платный API не используется.
 
@@ -25,30 +62,21 @@
 docker compose up        # или: docker compose up -d
 ```
 
-Compose поднимает один сервис ChromaDB и публикует порт `8000`.
+Compose поднимает два сервиса. `docker compose up` не индексирует корпус:
+
+- `chromadb` — образ `chromadb/chroma:1.5.9`, контейнер `startrek-chromadb`, порт `8000`, том `./ChromaDB:/data`;
+- `indexer` — образ и контейнер `startrek-indexer`. По умолчанию выполняет только `health-check` и сразу завершается.
+
+Локальный доступ к хранилищу:
 
 - `http://127.0.0.1:8000` — локальный API ChromaDB на этом компьютере, а не сайт в интернете. Консоль отправляет в него команды «запиши чанк» и «найди ближайшие».
 - Папка [ChromaDB](ChromaDB) — файлы хранилища, их пишет контейнер. C#-пакет эту папку напрямую не открывает: запись идёт только через API.
 
 Консоль контейнер сама не запускает. Если API не отвечает, `embed` останавливается с сообщением, что ChromaDB не запущена.
 
-## Запуск команд
+## Индексатор в Docker
 
-Сначала дождитесь, пока ChromaDB начнёт отвечать, затем по порядку:
-
-```powershell
-dotnet run --project src/StarTrek.Indexer -- analyze
-dotnet run --project src/StarTrek.Indexer -- chunk
-dotnet run --project src/StarTrek.Indexer -- embed
-```
-
-| Команда | Что делает |
-|---|---|
-| `analyze` | Только печатает отчёт: файлы, уровни заголовков, пустые блоки, разделы длиннее 480 и короче 80 токенов (`--all` — показать все, а не первые 20). Ничего не пишет. |
-| `chunk` | Режет файлы по решёткам и пишет JSON в `Data/staging/` без векторов. Файлы с тем же `content_hash` пропускает (`--force` — переделать все). В ChromaDB ничего не кладёт. |
-| `embed` | Читает `Data/staging/`, считает векторы e5 ONNX, пишет (upsert) чанки в коллекцию `startrek` и пересобирает индекс BM25 (корпус сохраняется в `Data/bm25/corpus.json`). Без модели или без ответа ChromaDB останавливается, уже записанное не трогает. `--force` — пересчитать всё. |
-
-`analyze` и `chunk` можно запускать и без Docker; ChromaDB нужна для `embed`.
+Образ и контейнер называются `startrek-indexer`. Образ собирается из [Dockerfile](Dockerfile): стадии `mcr.microsoft.com/dotnet/sdk:10.0` и `mcr.microsoft.com/dotnet/runtime:10.0` (glibc, не Alpine). `model.onnx` в образ не копируется. Файл решения лежит в образе над каталогом приложения, чтобы процесс нашёл корень репозитория. В `appsettings.json` адрес Chroma остаётся `http://127.0.0.1:8000`. Внутри Compose его перекрывает `STARTREK_Indexer__Chroma__Endpoint=http://chromadb:8000`.
 
 ## Схема
 
@@ -68,7 +96,7 @@ flowchart LR
 Всё настраивается в [src/StarTrek.Indexer/appsettings.json](src/StarTrek.Indexer/appsettings.json), а не в коде (отдельные значения можно переопределить переменными окружения с префиксом `STARTREK_`):
 
 - `Indexer:Paths` — корпус, `Data/staging`, папка модели, файл корпуса BM25;
-- `Indexer:Chroma` — адрес (`http://127.0.0.1:8000`) и коллекция `startrek`;
+- `Indexer:Chroma` — адрес (`http://127.0.0.1:8000` локально; в Compose — `http://chromadb:8000`) и коллекция `startrek`;
 - `Indexer:Chunking` — пороги 480 / 80 токенов и параметры переноса между кусками;
 - `Indexer:Bm25` — `K1 = 1.5`, `B = 0.75`;
 - `Indexer:Search` — параметры гибридного поиска (RRF).

@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+.git
+.vs
+.vscode
+.idea
+Tests/
+tests/
+Models/multilingual-e5-small/model.onnx
+Data/
+data/
+ChromaDB/
+SourceFiles/

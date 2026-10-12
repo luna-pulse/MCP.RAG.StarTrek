@@ -7,3 +7,15 @@ services:
     volumes:
       - ./ChromaDB:/data
     restart: unless-stopped
+
+  indexer:
+    image: startrek-indexer
+    container_name: startrek-indexer
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - chromadb
+    environment:
+      STARTREK_Indexer__Chroma__Endpoint: http://chromadb:8000
+    command: ["health-check"]
