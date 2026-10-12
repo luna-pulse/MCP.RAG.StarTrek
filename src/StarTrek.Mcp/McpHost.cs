@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -50,7 +51,7 @@ public static class McpHost
             {
                 options.SessionMode = HttpServerSessionMode.Stateless;
             })
-            .WithTools<SearchTools>()
+            .WithTools<SearchTools>(CreateToolSerializerOptions())
             .WithRequestFilters(filters =>
             {
                 filters.AddCallToolFilter(next => async (context, cancellationToken) =>
@@ -83,9 +84,40 @@ public static class McpHost
         builder.Services.AddHostedService<McpInitializationHostedService>();
 
         var app = builder.Build();
+        UseRelaxedJsonResponses(app);
         app.MapGet("/health", () => Results.Text("MCP-сервер отвечает: healthy.", "text/plain", Encoding.UTF8));
         app.MapMcp(mcpOptions.Path);
         return app;
+    }
+
+    private static JsonSerializerOptions CreateToolSerializerOptions() =>
+        new(McpJsonUtilities.DefaultOptions)
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
+
+    private static void UseRelaxedJsonResponses(WebApplication app)
+    {
+        app.Use(async (context, next) =>
+        {
+            var originalBody = context.Response.Body;
+            var stream = new RelaxedJsonResponseStream(
+                originalBody,
+                () => context.Response.ContentType,
+                () => context.Response.ContentLength = null,
+                length => context.Response.ContentLength = length,
+                () => context.Response.HasStarted);
+            context.Response.Body = stream;
+            try
+            {
+                await next(context);
+            }
+            finally
+            {
+                context.Response.Body = originalBody;
+                await stream.CompleteAsync();
+            }
+        });
     }
 
     private static CallToolResult StripSdkErrorPrefix(
