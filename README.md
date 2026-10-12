@@ -1,14 +1,45 @@
-# MCP.RAG.StarTrek
+# RAG Knowledge Base: MCP-сервер с локальной LLM и Microsoft Semantic Kernel
 
-Консольный индексатор корпуса `SourceFiles` (Star Trek, русский язык) на C# / .NET 10: нарезка по решёткам, локальные эмбеддинги `intfloat/multilingual-e5-small` через ONNX Runtime, коллекция в ChromaDB и индекс BM25. Python в решении нет. Подробности и обоснования — в [Docs/6. Plan.md](Docs/6.%20Plan.md). Запуск индексатора в Docker — в [Docs/7. План запуска в Docker.md](Docs/7.%20План%20запуска%20в%20Docker.md).
+Поиск по русскоязычному сериалу Star Trek на C# / .NET 10. 
 
-## Что нужно заранее
+Солюшен включает в себя:
 
-- **С Docker** — [Docker](https://www.docker.com/) (ChromaDB и образ `startrek-indexer`); SDK на хосте не нужен;
-- **Без Docker** — SDK .NET 10 (версия в [global.json](global.json));
+- проект индексатора `src/StarTrek.Indexer` — консоль, которая режет `SourceFiles` по решёткам и считает локальные эмбеддинги `intfloat/multilingual-e5-small`;
+- проект MCP-сервера `src/StarTrek.Mcp` — HTTP-сервер, который отдаёт найденные чанки;
+- база ChromaDB — коллекция `startrek` с векторами чанков, файлы в папке `ChromaDB`;
+- данные полнотекстового поиска — корпус Okapi BM25 в `Data/bm25/corpus.json`.
+
+Python в решении нет. Подробности индексации — в [Docs/6. Plan.md](Docs/6.%20Plan.md). Запуск индексатора в Docker — в [Docs/7. План запуска в Docker.md](Docs/7.%20План%20запуска%20в%20Docker.md). Устройство сервера — в [Docs/8. Спецификация MCP-сервера.md](Docs/8.%20Спецификация%20MCP-сервера.md).
+
+## Инструменты MCP
+
+```mermaid
+flowchart TB
+    Client["Клиент: агент"] --> Server["MCP-сервер"]
+    Server --> Bm25["search_bm25\nслова запроса, Okapi BM25"]
+    Server --> Semantic["search_semantic\nсмысл запроса в ChromaDB"]
+    Server --> Hybrid["search_hybrid\nслова и смысл, слияние RRF"]
+    Bm25 --> Corpus["Data/bm25/corpus.json"]
+    Semantic --> Chroma["ChromaDB, коллекция startrek"]
+    Hybrid --> Corpus
+    Hybrid --> Chroma
+```
+
+
+
+
+
+## Что нужно заранее установить
+
+- **С Docker** — [Docker](https://www.docker.com/);
+- **Без Docker** — SDK .NET 10;
 - ONNX-модель `model.onnx` (~448 МБ): [скачать](https://huggingface.co/intfloat/multilingual-e5-small/resolve/main/onnx/model.onnx) в `Models/multilingual-e5-small/` (нужна для `embed`).
 
+
+
 ## Запуск
+
+
 
 ### 1. Запуск индексатора
 
@@ -26,13 +57,17 @@ SDK на хосте не нужен. Сборка образа `startrek-indexer
 dotnet run --project src/StarTrek.Indexer -- <команда>
 ```
 
-| Команда | Что делает |
-|---|---|
-| `analyze` | Только печатает отчёт: файлы, уровни заголовков, пустые блоки, разделы длиннее 480 и короче 80 токенов (`--all` — показать все, а не первые 20). Ничего не пишет. |
-| `chunk` | Режет файлы по решёткам и пишет JSON в `Data/staging/` без векторов. Файлы с тем же `content_hash` пропускает (`--force` — переделать все). В ChromaDB ничего не кладёт. |
-| `embed` | Читает `Data/staging/`, считает векторы e5 ONNX, пишет (upsert) чанки в коллекцию `startrek` и пересобирает индекс BM25 (корпус сохраняется в `Data/bm25/corpus.json`). Без модели или без ответа ChromaDB останавливается, уже записанное не трогает. `--force` — пересчитать всё. |
-| `health-check` | Печатает `Индексатор отвечает: healthy.` и возвращает код 0. Не читает корпус, не грузит ONNX и не вызывает ChromaDB. |
-| `help` | Печатает список команд и завершается с кодом 0. |
+
+| Команда        | Что делает                                                                                                                                                                                                                                                                          |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `analyze`      | Только печатает отчёт: файлы, уровни заголовков, пустые блоки, разделы длиннее 480 и короче 80 токенов (`--all` — показать все, а не первые 20). Ничего не пишет.                                                                                                                   |
+| `chunk`        | Режет файлы по решёткам и пишет JSON в `Data/staging/` без векторов. Файлы с тем же `content_hash` пропускает (`--force` — переделать все). В ChromaDB ничего не кладёт.                                                                                                            |
+| `embed`        | Читает `Data/staging/`, считает векторы e5 ONNX, пишет (upsert) чанки в коллекцию `startrek` и пересобирает индекс BM25 (корпус сохраняется в `Data/bm25/corpus.json`). Без модели или без ответа ChromaDB останавливается, уже записанное не трогает. `--force` — пересчитать всё. |
+| `health-check` | Печатает `Индексатор отвечает: healthy.` и возвращает код 0. Не читает корпус, не грузит ONNX и не вызывает ChromaDB.                                                                                                                                                               |
+| `help`         | Печатает список команд и завершается с кодом 0.                                                                                                                                                                                                                                     |
+
+
+
 
 ### 2. Запуск MCP-сервера
 
@@ -49,11 +84,7 @@ docker compose up -d chromadb mcp
 
 Проверка процесса: `GET http://127.0.0.1:8080/health`. Ответ — код 200 и тело `MCP-сервер отвечает: healthy.` Этот запрос не читает корпус BM25, не грузит ONNX и не вызывает ChromaDB: строка значит, что процесс слушает, а не что индекс на месте. Проверка успешна и без корпуса, и без `model.onnx`.
 
-Три инструмента:
-
-- `search_bm25` — слова запроса (Okapi BM25);
-- `search_semantic` — смысл в ChromaDB;
-- `search_hybrid` — слова и смысл (RRF).
+Имена инструментов и куда они ходят — на схеме «Инструменты MCP» в начале файла.
 
 Пример подключения — файл `mcp.example.json` в корне репозитория. Скопируйте его в `.vscode/mcp.json` для VS Code Copilot. Каталог `.vscode/` в git не входит. В примере адрес HTTP, не команда STDIO. 
 
@@ -63,11 +94,11 @@ docker compose up -d chromadb mcp
 
 `Models/multilingual-e5-small/model.onnx` в git не входит: файл весит около 448 МБ. Скачайте его и сохраните по пути `Models/multilingual-e5-small/model.onnx`:
 
-<https://huggingface.co/intfloat/multilingual-e5-small/resolve/main/onnx/model.onnx>
+[https://huggingface.co/intfloat/multilingual-e5-small/resolve/main/onnx/model.onnx](https://huggingface.co/intfloat/multilingual-e5-small/resolve/main/onnx/model.onnx)
 
 `analyze`, `chunk` и `health-check` работают без `model.onnx`: `chunk` нужен только `tokenizer.json` (подсчёт токенов), сам файл весов не вызывается.
 
-При индексации E5 получает служебный префикс `passage: `, а при поисковом запросе — `query: `. В ChromaDB хранится текст без этого префикса. Эмбеддинги вычисляются локально, платный API не используется.
+При индексации E5 получает служебный префикс `passage:` , а при поисковом запросе — `query:` . В ChromaDB хранится текст без этого префикса. Эмбеддинги вычисляются локально, платный API не используется.
 
 ## ChromaDB
 
@@ -75,10 +106,11 @@ docker compose up -d chromadb mcp
 docker compose up        # или: docker compose up -d
 ```
 
-Compose поднимает два сервиса. `docker compose up` не индексирует корпус:
+Compose поднимает три сервиса. `docker compose up` корпус не индексирует:
 
 - `chromadb` — образ `chromadb/chroma:1.5.9`, контейнер `startrek-chromadb`, порт `8000`, том `./ChromaDB:/data`;
-- `indexer` — образ и контейнер `startrek-indexer`. По умолчанию выполняет только `health-check` и сразу завершается.
+- `indexer` — образ и контейнер `startrek-indexer`. По умолчанию выполняет только `health-check` и сразу завершается;
+- `mcp` — образ и контейнер `startrek-mcp`, порт `8080`. Слушает HTTP и отдаёт три инструмента поиска. Сборка и адрес клиента — в разделе «2. Запуск MCP-сервера».
 
 Локальный доступ к хранилищу:
 
@@ -97,8 +129,16 @@ flowchart LR
   onnx[e5small_ONNX] --> embed[embed]
   staging --> embed
   embed --> chroma[ChromaDB]
-  embed --> bm25[Bm25InMemory]
+  embed --> bm25[Bm25Corpus]
+  bm25 --> mcp[McpServer]
+  chroma --> mcp
+  onnx --> mcp
+  mcp --> client[Клиент MCP]
 ```
+
+
+
+
 
 ## Конфигурация
 
@@ -110,14 +150,24 @@ flowchart LR
 - `Indexer:Bm25` — `K1 = 1.5`, `B = 0.75`;
 - `Indexer:Search` — параметры гибридного поиска (RRF).
 
+Адрес, путь `/mcp` и журнал сервера — в [src/StarTrek.Mcp/appsettings.json](src/StarTrek.Mcp/appsettings.json). Пороги поиска сервер читает из файла индексатора. Переопределение — те же переменные `STARTREK_`.
+
 Папки `Data/` и `ChromaDB/` хранятся в репозитории. Из `Models/` в git входит `tokenizer.json`; `model.onnx` скачивается отдельно.
 
 ## Поиск
 
-Командной строки для поиска нет. `HybridSearchService` (вектор из ChromaDB + BM25, слияние RRF) — внутренний API для будущей оркестрации на Semantic Kernel; консоль только собирает оба индекса.
+Командной строки для поиска нет. Готовый индекс читает MCP-сервер:
+
+- `search_bm25` — слова запроса в индексе Okapi BM25;
+- `search_semantic` — смысл запроса в коллекции `startrek`;
+- `search_hybrid` — оба списка, слияние RRF в `HybridSearchService`.
+
+Сервер возвращает чанки. Ответ на вопрос пишет клиент, которому эти чанки отданы: агент IDE или локальная модель.
 
 ## Тесты
 
 ```powershell
 dotnet test
 ```
+
+Проверяются `Tests/StarTrek.Indexer.Tests` и `Tests/StarTrek.Mcp.Tests`. Интеграционные тесты с живой ChromaDB пропускаются, если `http://127.0.0.1:8000` не отвечает.
