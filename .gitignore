@@ -8,6 +8,6 @@
 TestResults/
 coverage/
 /models/
-/data/
+/Data/
 /ChromaDB/*
 !/ChromaDB/.gitkeep

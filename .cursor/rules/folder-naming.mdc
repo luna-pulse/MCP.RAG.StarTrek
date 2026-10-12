@@ -1,0 +1,15 @@
+---
+description: Новые папки проекта называются в CamelCase с заглавной буквы
+alwaysApply: true
+---
+
+# Имена папок
+
+Новая папка в этом репозитории начинается с заглавной буквы и пишется в CamelCase.
+
+- Верно: `Data`, `Tests`, `SourceFiles`
+- Неверно: `data`, `tests`, `source-files`, `source_files`
+
+Имя из одного слова тоже с заглавной: `Docs`, а не `docs`.
+
+Путь внутри чужого контейнера не является папкой проекта. Том `./ChromaDB:/data` в Docker Compose не переименовывать: `/data` ожидает образ ChromaDB.

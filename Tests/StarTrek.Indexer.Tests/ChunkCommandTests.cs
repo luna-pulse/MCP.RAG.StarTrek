@@ -27,9 +27,9 @@ public sealed class ChunkCommandTests : IDisposable
         paths = new RepositoryPaths(
             root,
             Path.Combine(root, "SourceFiles"),
-            Path.Combine(root, "data", "staging"),
+            Path.Combine(root, "Data", "staging"),
             Path.Combine(root, "models", "multilingual-e5-small"),
-            Path.Combine(root, "data", "bm25", "corpus.json"));
+            Path.Combine(root, "Data", "bm25", "corpus.json"));
         store = new ChunkStagingStore(paths.Staging);
         WriteSource(RaceFile, RaceText);
         WriteSource(PlanetFile, PlanetText);

@@ -14,15 +14,15 @@ public sealed class ConfigurationTests
         var options = new PathOptions
         {
             Corpus = "SourceFiles",
-            Staging = "data/staging",
+            Staging = "Data/staging",
             EmbeddingModel = "models/multilingual-e5-small",
-            Bm25Corpus = "data/bm25/corpus.json"
+            Bm25Corpus = "Data/bm25/corpus.json"
         };
 
         var paths = RepositoryPathResolver.Resolve(root, options);
 
         Assert.Equal(Path.Combine(root, "SourceFiles"), paths.Corpus);
-        Assert.Equal(Path.Combine(root, "data", "staging"), paths.Staging);
+        Assert.Equal(Path.Combine(root, "Data", "staging"), paths.Staging);
         Assert.Equal(
             Path.Combine(root, "models", "multilingual-e5-small", "tokenizer.json"),
             paths.TokenizerFile);
