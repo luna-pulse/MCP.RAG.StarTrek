@@ -21,19 +21,26 @@ services:
     command: ["health-check"]
 
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.40.6
     container_name: startrek-ollama
     ports:
       - "11434:11434"
     volumes:
       - ollama-models:/root/.ollama
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
 
   ollama-pull:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.40.6
     container_name: startrek-ollama-pull
     depends_on:
-      - ollama
+      ollama:
+        condition: service_healthy
     environment:
       OLLAMA_HOST: http://ollama:11434
     entrypoint: ["/bin/sh", "-c"]
@@ -55,8 +62,12 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - chromadb
-      - ollama
+      chromadb:
+        condition: service_started
+      ollama:
+        condition: service_healthy
+      ollama-pull:
+        condition: service_completed_successfully
     environment:
       STARTREK_Indexer__Chroma__Endpoint: http://chromadb:8000
       STARTREK_Indexer__Paths__Bm25Corpus: /opt/startrek/data/bm25/corpus.json

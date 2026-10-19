@@ -134,9 +134,9 @@ Compose поднимает хранилище, индексатор, MCP и ло
 
 - `chromadb` — образ `chromadb/chroma:1.5.9`, контейнер `startrek-chromadb`, порт `8000`, том `./ChromaDB:/data`;
 - `indexer` — образ и контейнер `startrek-indexer`. По умолчанию выполняет только `health-check` и сразу завершается;
-- `ollama` — образ `ollama/ollama:latest`, контейнер `startrek-ollama`, порт `11434`, том `ollama-models`;
-- `ollama-pull` — один раз выполняет `ollama pull qwen3.5:4b` и завершается;
-- `mcp` — образ и контейнер `startrek-mcp`, порт `8080`. Слушает HTTP и отдаёт три инструмента поиска и `ask_question`. В контейнере `STARTREK_Llm__Endpoint=http://ollama:11434` и `STARTREK_Llm__Model=qwen3.5:4b`. Сборка и адрес клиента — в разделе «2. Запуск MCP-сервера».
+- `ollama` — образ `ollama/ollama:0.40.6`, контейнер `startrek-ollama`, порт `11434`, том `ollama-models`. Проверка готовности — `ollama list` внутри контейнера;
+- `ollama-pull` — после готовности `ollama` один раз выполняет `ollama pull qwen3.5:4b` и завершается;
+- `mcp` — образ и контейнер `startrek-mcp`, порт `8080`. Стартует после успешного завершения `ollama-pull`, чтобы модель уже была скачана. Слушает HTTP и отдаёт три инструмента поиска и `ask_question`. В контейнере `STARTREK_Llm__Endpoint=http://ollama:11434` и `STARTREK_Llm__Model=qwen3.5:4b`. Сборка и адрес клиента — в разделе «2. Запуск MCP-сервера».
 
 Локальный доступ к хранилищу:
 
