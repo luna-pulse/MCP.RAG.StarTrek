@@ -18,3 +18,18 @@ Corrective RAG: ответ поверх цикла индексатора, бе�
 Почему прямой вызов, а не Process Framework Semantic Kernel и не LangGraph. Цикл с одной развилкой уже написан и покрыт тестами в индексаторе. Поверх него остаётся одно действие: есть чанки с текстом — ответ, нет — фиксированная фраза «В базе знаний Star Trek об этом ничего не найдено.» Модель в этом случае не вызывается и не дописывает факт из своих весов. Если после двух расширений чанки выше порога всё же есть, ответ пишется по ним.
 
 Ошибка ChromaDB и ошибка Ollama на шаге ответа уходят текстом инструмента MCP, слушатель не падает. Эмбеддинги по-прежнему считает ONNX `intfloat/multilingual-e5-small`, не модель Ollama.
+
+
+
+**Semantic Kernel управляет гибридным поиском.**
+
+Сам `Kernel` вызывает только `KernelHybridSearch.SearchAsync`: он через `kernel.InvokeAsync` по очереди запускает функции плагина `Search`. Этот плагин описан в `SearchKernelPlugin`, и каждая его функция обращается к своему методу:
+
+- `vector_candidates` вызывает `HybridSearchService.CollectVectorAsync`
+- `lexical_candidates` вызывает `HybridSearchService.CollectLexical`
+- `fuse_ranks` вызывает `ReciprocalRankFusion.Fuse`
+- `assemble_hits` вызывает `HybridSearchService.AssembleAsync`
+
+Через ядро опосредованно идут `SearchTools.FindRelevantDocs` (это MCP-инструмент `find_relevant_docs`) и `CorrectiveRagRetrieval.RetrieveAsync`: оба обращаются к `IHybridSearch`, а за ним стоит `KernelHybridSearch`. Регистрирует всё это метод `AddStarTrekSearchRead` через `AddKernel().Plugins.AddFromType<SearchKernelPlugin>()`.
+
+Мимо Kernel идут `search_bm25`, `search_semantic` и генерация ответа в `ask_question`, которая использует `IChatClient` напрямую.
