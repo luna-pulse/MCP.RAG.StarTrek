@@ -134,9 +134,13 @@ Compose поднимает хранилище, индексатор, MCP и ло
 
 - `chromadb` — образ `chromadb/chroma:1.5.9`, контейнер `startrek-chromadb`, порт `8000`, том `./ChromaDB:/data`;
 - `indexer` — образ и контейнер `startrek-indexer`. По умолчанию выполняет только `health-check` и сразу завершается;
-- `ollama` — образ `ollama/ollama:0.40.6`, контейнер `startrek-ollama`, порт `11434`, том `ollama-models`. Проверка готовности — `ollama list` внутри контейнера;
-- `ollama-pull` — после готовности `ollama` один раз выполняет `ollama pull qwen3.5:4b` и завершается;
-- `mcp` — образ и контейнер `startrek-mcp`, порт `8080`. Стартует после успешного завершения `ollama-pull`, чтобы модель уже была скачана. Слушает HTTP и отдаёт три инструмента поиска и `ask_question`. В контейнере `STARTREK_Llm__Endpoint=http://ollama:11434` и `STARTREK_Llm__Model=qwen3.5:4b`. Сборка и адрес клиента — в разделе «2. Запуск MCP-сервера».
+- `ollama` — образ `ollama/ollama:0.40.6`, контейнер `startrek-ollama`, порт `11434`, том `ollama-models`;
+- `ollama-pull` — один раз выполняет `ollama pull qwen3.5:4b` и завершается;
+- `mcp` — образ и контейнер `startrek-mcp`, порт `8080`. Слушает HTTP и отдаёт три инструмента поиска и `ask_question`. В контейнере `STARTREK_Llm__Endpoint=http://ollama:11434` и `STARTREK_Llm__Model=qwen3.5:4b`. Сборка и адрес клиента — в разделе «2. Запуск MCP-сервера».
+
+**Healthcheck.** У `ollama` проверка через `ollama list`: команда обращается к самому серверу внутри контейнера, поэтому сервис считается готовым, только когда реально принимает запросы (`ollama --version` прошла бы раньше, а `curl`/`wget` в образе может не быть).
+
+**Порядок запуска.** `ollama-pull` ждёт, пока `ollama` станет healthy, и один раз скачивает `qwen3.5:4b`. `mcp` стартует только после того, как `ollama` healthy и `ollama-pull` успешно завершился (`service_completed_successfully`), поэтому первые вызовы `ask_question` не падают, пока модель ещё качается. `chromadb` — `service_started`.
 
 Локальный доступ к хранилищу:
 
