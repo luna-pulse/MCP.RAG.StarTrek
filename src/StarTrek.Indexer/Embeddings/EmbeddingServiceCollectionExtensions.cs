@@ -1,6 +1,5 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel;
 using StarTrek.Indexer.Configuration;
 using StarTrek.Indexer.Tokenization;
 
@@ -22,7 +21,6 @@ public static class EmbeddingServiceCollectionExtensions
         services.AddEmbeddingGenerator<string, Embedding<float>>(
             serviceProvider =>
                 serviceProvider.GetRequiredService<OnnxE5EmbeddingGenerator>());
-        services.AddKernel();
 
         return services;
     }

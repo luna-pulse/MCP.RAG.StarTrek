@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
 using StarTrek.Indexer.Commands;
 using StarTrek.Indexer.Configuration;
 using StarTrek.Indexer.Embeddings;
@@ -43,6 +44,12 @@ public sealed class SearchRegistrationTests
         Assert.NotNull(provider.GetRequiredService<LexicalSearchService>());
         Assert.NotNull(provider.GetRequiredService<SemanticSearchService>());
         Assert.NotNull(provider.GetRequiredService<HybridSearchService>());
+        Assert.IsType<KernelHybridSearch>(provider.GetRequiredService<IHybridSearch>());
+        var plugin = provider.GetRequiredService<Kernel>().Plugins[SearchKernelNames.Plugin];
+        Assert.NotNull(plugin[SearchKernelNames.Vector]);
+        Assert.NotNull(plugin[SearchKernelNames.Lexical]);
+        Assert.NotNull(plugin[SearchKernelNames.Fuse]);
+        Assert.NotNull(plugin[SearchKernelNames.Assemble]);
     }
 
     [Fact]

@@ -11,7 +11,7 @@ namespace StarTrek.Mcp;
 public sealed class SearchTools(
     LexicalSearchService lexical,
     SemanticSearchService semantic,
-    HybridSearchService hybrid,
+    IHybridSearch hybrid,
     IOptions<IndexerOptions> options)
 {
     [McpServerTool(Name = "search_bm25", ReadOnly = true, UseStructuredContent = true)]

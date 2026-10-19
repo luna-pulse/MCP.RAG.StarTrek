@@ -4,12 +4,12 @@
 
 ## Проект
 
-Консольный индексатор корпуса `SourceFiles` (Star Trek, русский язык). Нарезка по заголовкам с решётками `#`, локальные эмбеддинги `intfloat/multilingual-e5-small` (ONNX, 384 измерения), коллекция ChromaDB `startrek` и индекс BM25. Гибридный поиск (RRF) — внутренний API; командной строки поиска нет. MCP-сервер ещё не реализован.
+Консольный индексатор корпуса `SourceFiles` (Star Trek, русский язык) и HTTP-сервер MCP `src/StarTrek.Mcp`. Нарезка по заголовкам с решётками `#`, локальные эмбеддинги `intfloat/multilingual-e5-small` (ONNX, 384 измерения), коллекция ChromaDB `startrek` и индекс BM25. Командной строки поиска нет. Гибридный поиск — внутренний `IHybridSearch` (`KernelHybridSearch`): инструменты `find_relevant_docs` и цикл Corrective RAG вызывают функции плагина `Search` через `kernel.InvokeAsync`. `search_bm25`, `search_semantic` и текст ответа `ask_question` ядро не проходят.
 
 ## Стек
 
-- Язык и рантайм: C# / .NET 10 (`global.json`, `net10.0`). Солюшен `MCP.RAG.StarTrek.sln`, проект `src/StarTrek.Indexer`, тесты `Tests/StarTrek.Indexer.Tests` (xUnit).
-- Python, LangChain и LangGraph в решение не добавлять. Позже оркестрация — Microsoft Semantic Kernel.
+- Язык и рантайм: C# / .NET 10 (`global.json` — SDK 10.0.401, проекты `net10.0`). Солюшен `MCP.RAG.StarTrek.sln`, проекты `src/StarTrek.Indexer` и `src/StarTrek.Mcp`, тесты `Tests/StarTrek.Indexer.Tests` и `Tests/StarTrek.Mcp.Tests` (xUnit).
+- Python, LangChain и LangGraph в решение не добавлять. Оркестрация гибридного поиска — `Microsoft.SemanticKernel.Core` 1.81.0 (`AddKernel()`, плагин `Search`). Эмбеддинги — `Microsoft.Extensions.AI` 10.8.0, `Microsoft.ML.OnnxRuntime` 1.31.0, токенизатор `Tokenizers.HuggingFace` 3.23.1. Чат Ollama — OllamaSharp 5.5.0. Хост индексатора — `Microsoft.Extensions.Hosting` 10.0.12. HTTP MCP — `ModelContextProtocol.AspNetCore` 2.2.0. Журнал сервера — NLog 4.7.15, `NLog.Extensions.Logging` 1.7.5, `NLog.GelfLayout` 1.5.0.
 - Платный API эмбеддингов не использовать. Генеративная LLM для нарезки не нужна: границы чанков уже стоят решётками в файлах.
 - Родительские и дочерние чанки не делать. Один чанк и для поиска, и для ответа.
 
@@ -32,7 +32,7 @@ dotnet run --project src/StarTrek.Indexer -- <команда>
 
 `embed` и `embed --force` запускать только по явной просьбе: команда пишет в ChromaDB и `Data/bm25/`. Если модели нет или API не отвечает, команда останавливается и уже записанное не трогает.
 
-`docker compose up` корпус не индексирует. Сервис `indexer` по умолчанию выполняет `health-check` и не ждёт `model.onnx`. Сервис `model-pull` до старта `mcp` скачивает `model.onnx` в `Models/multilingual-e5-small/`, если файла ещё нет.
+`docker compose up` корпус не индексирует. Сервис `indexer` по умолчанию выполняет `health-check` и не ждёт `model.onnx`. Рядом поднимаются `chromadb` (`chromadb/chroma:1.5.9`), `ollama` и `ollama-pull` (`ollama/ollama:0.40.6`, модель `qwen3.5:4b`), `model-pull` и `mcp` (порт 8080, путь `/mcp`). Сервис `model-pull` до старта `mcp` скачивает `model.onnx` в `Models/multilingual-e5-small/`, если файла ещё нет.
 
 ## Конфигурация
 
@@ -54,7 +54,7 @@ dotnet run --project src/StarTrek.Indexer -- <команда>
 
 ## Код
 
-- `nullable` и неявные `using` включены. Пространства имён — `StarTrek.Indexer.*`, тесты — `StarTrek.Indexer.Tests`.
+- `nullable` и неявные `using` включены. Пространства имён индексатора — `StarTrek.Indexer.*`, сервера — `StarTrek.Mcp` и `StarTrek.Mcp.Rag`. Тесты — `StarTrek.Indexer.Tests` и `StarTrek.Mcp.Tests`.
 - Идентификаторы в коде — на английском. Сообщения консоли, документы в `Docs/` и комментарии к пользовательским сценариям — на русском.
 - Текст корпуса не переписывать: имена, номера кораблей и коды серий сохранять. Нормализация — Unicode NFC и переводы строк `\n`.
 - Три диалекта заголовков в `SourceFiles`: расы (строка из одних `####`, заголовок следующей строкой), планеты и сериалы (Markdown `#` на той же строке), корабли (`#` реестр, `##` класс, `###` корабль).

@@ -27,9 +27,11 @@ public sealed record HybridSearchResult(
     int Bm25Candidates);
 
 /// <summary>
-/// Поиск для этапа запроса (на нём его вызывает Semantic Kernel: функция плагина или шаг процесса):
-/// запрос → эмбеддинг с префиксом query: → top-N из Chroma → top-N из BM25 → слияние RRF.
-/// Консольной команды у него нет: это внутренний API.
+/// Шаги гибридного поиска. На пути MCP их вызывает плагин Semantic Kernel <c>Search</c>
+/// через <c>kernel.InvokeAsync</c>: <c>vector_candidates</c> (эмбеддинг с префиксом query:
+/// и top-N из Chroma), <c>lexical_candidates</c> (top-N из BM25), <c>fuse_ranks</c>
+/// (<see cref="ReciprocalRankFusion"/>) и <c>assemble_hits</c>.
+/// Консольной команды у поиска нет.
 /// </summary>
 public sealed class HybridSearchService(
     ChromaHttpClient chroma,
@@ -37,42 +39,79 @@ public sealed class HybridSearchService(
     Bm25IndexHolder bm25,
     IOptions<IndexerOptions> options) : IHybridSearch
 {
+    public int RrfK => options.Value.Search.RrfK;
+
     public async Task<HybridSearchResult> SearchAsync(
         string query,
         int? resultCount = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(query);
-        var settings = options.Value;
-        var search = settings.Search;
-        var take = resultCount ?? search.ResultCount;
+        var take = resultCount ?? options.Value.Search.ResultCount;
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(take);
 
-        var index = bm25.GetOrLoad(settings.Chroma.Collection);
+        var vector = await CollectVectorAsync(query, cancellationToken);
+        var lexical = CollectLexical(query);
+        var fused = ReciprocalRankFusion.Fuse(
+            vector.Hits.Select(hit => hit.Id).ToArray(),
+            lexical.Hits.Select(hit => hit.Id).ToArray(),
+            RrfK);
+        return await AssembleAsync(query, take, vector, lexical, fused, cancellationToken);
+    }
+
+    public async Task<VectorCandidates> CollectVectorAsync(
+        string query,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(query);
+        var settings = options.Value;
         var collection = await chroma.TryGetCollectionAsync(settings.Chroma.Collection, cancellationToken) ??
             throw new InvalidOperationException(
                 $"Коллекция {settings.Chroma.Collection} не найдена в ChromaDB. Сначала выполните команду embed.");
-
         var embedding = await queryEmbedder.GenerateQueryAsync(query, cancellationToken);
         var neighbours = await chroma.QueryAsync(
             collection.Id,
             embedding.Vector.ToArray(),
-            search.VectorTopN,
+            settings.Search.VectorTopN,
             cancellationToken);
-        var lexical = index.Search(query, search.Bm25TopN);
+        return new VectorCandidates(
+            collection.Id,
+            neighbours
+                .Select(hit => new VectorCandidate(hit.Id, hit.Distance, hit.Document, hit.Metadata))
+                .ToList());
+    }
 
-        var fused = ReciprocalRankFusion.Fuse(
-            neighbours.Select(hit => hit.Id).ToList(),
-            lexical.Select(hit => hit.Id).ToList(),
-            search.RrfK);
+    public LexicalCandidates CollectLexical(string query)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(query);
+        var settings = options.Value;
+        var index = bm25.GetOrLoad(settings.Chroma.Collection);
+        return new LexicalCandidates(
+            index.Search(query, settings.Search.Bm25TopN)
+                .Select(hit => new LexicalCandidate(hit.Id, hit.Score))
+                .ToList());
+    }
 
-        var neighbourById = neighbours.ToDictionary(hit => hit.Id, StringComparer.Ordinal);
-        var lexicalById = lexical.ToDictionary(hit => hit.Id, StringComparer.Ordinal);
-        var records = neighbours
-            .ToDictionary(
-                hit => hit.Id,
-                hit => new ChromaDocumentRecord(hit.Id, hit.Document, hit.Metadata),
-                StringComparer.Ordinal);
+    public async Task<HybridSearchResult> AssembleAsync(
+        string query,
+        int take,
+        VectorCandidates vector,
+        LexicalCandidates lexical,
+        IReadOnlyList<RrfEntry> fused,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(query);
+        ArgumentNullException.ThrowIfNull(vector);
+        ArgumentNullException.ThrowIfNull(lexical);
+        ArgumentNullException.ThrowIfNull(fused);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(take);
+
+        var neighbourById = vector.Hits.ToDictionary(hit => hit.Id, StringComparer.Ordinal);
+        var lexicalById = lexical.Hits.ToDictionary(hit => hit.Id, StringComparer.Ordinal);
+        var records = vector.Hits.ToDictionary(
+            hit => hit.Id,
+            hit => new ChromaDocumentRecord(hit.Id, hit.Document, hit.Metadata),
+            StringComparer.Ordinal);
 
         // BM25-чанки, которых нет среди соседей Chroma, дочитываются по id одним запросом.
         // Id из старого корпуса, которых уже нет в коллекции, отбрасываются.
@@ -80,7 +119,7 @@ public sealed class HybridSearchService(
         var stale = new HashSet<string>(StringComparer.Ordinal);
         if (missing.Count > 0)
         {
-            foreach (var record in await chroma.GetByIdsAsync(collection.Id, missing, cancellationToken))
+            foreach (var record in await chroma.GetByIdsAsync(vector.CollectionId, missing, cancellationToken))
             {
                 records[record.Id] = record;
             }
@@ -98,13 +137,13 @@ public sealed class HybridSearchService(
                     entry.Id,
                     entry.Score,
                     entry.Ranks[0],
-                    neighbourById.TryGetValue(entry.Id, out var vector) ? vector.Distance : null,
+                    neighbourById.TryGetValue(entry.Id, out var neighbour) ? neighbour.Distance : null,
                     entry.Ranks[1],
                     lexicalById.TryGetValue(entry.Id, out var lexicalHit) ? lexicalHit.Score : null,
                     record.Document,
                     record.Metadata);
             })
             .ToList();
-        return new HybridSearchResult(query, hits, neighbours.Count, lexical.Count);
+        return new HybridSearchResult(query, hits, vector.Hits.Count, lexical.Hits.Count);
     }
 }

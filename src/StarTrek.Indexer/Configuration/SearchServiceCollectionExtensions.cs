@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.SemanticKernel;
 using StarTrek.Indexer.Bm25;
 using StarTrek.Indexer.Chroma;
 using StarTrek.Indexer.Embeddings;
@@ -88,7 +89,13 @@ public static class SearchServiceCollectionExtensions
         services.AddSingleton<LexicalSearchService>();
         services.AddSingleton<SemanticSearchService>();
         services.AddSingleton<HybridSearchService>();
-        services.AddSingleton<IHybridSearch>(serviceProvider => serviceProvider.GetRequiredService<HybridSearchService>());
+        // AddKernel регистрирует плагин Search и transient Kernel.
+        // Следом подменяем пустую KernelPluginCollection: иначе конструктор Kernel
+        // получает пустую коллекцию и не видит плагины, зарегистрированные в DI.
+        services.AddKernel().Plugins.AddFromType<SearchKernelPlugin>(SearchKernelNames.Plugin);
+        services.AddTransient<KernelPluginCollection>(serviceProvider =>
+            new KernelPluginCollection(serviceProvider.GetServices<KernelPlugin>()));
+        services.AddSingleton<IHybridSearch, KernelHybridSearch>();
         services.AddStarTrekLlm(configuration);
         return services;
     }
