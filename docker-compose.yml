@@ -20,6 +20,32 @@ services:
       STARTREK_Indexer__Chroma__Endpoint: http://chromadb:8000
     command: ["health-check"]
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: startrek-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    restart: unless-stopped
+
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: startrek-ollama-pull
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
+          ollama pull qwen3.5:4b && exit 0
+          sleep 5
+        done
+        exit 1
+    restart: "no"
+
   mcp:
     image: startrek-mcp
     container_name: startrek-mcp
@@ -30,6 +56,7 @@ services:
       - "8080:8080"
     depends_on:
       - chromadb
+      - ollama
     environment:
       STARTREK_Indexer__Chroma__Endpoint: http://chromadb:8000
       STARTREK_Indexer__Paths__Bm25Corpus: /opt/startrek/data/bm25/corpus.json
@@ -38,8 +65,13 @@ services:
       STARTREK_Mcp__Logging__Level: Debug
       STARTREK_Mcp__Logging__InitializationLogPath: /opt/startrek/data/logs/mcp-init.log
       STARTREK_Mcp__Logging__RequestLogPath: /opt/startrek/data/logs/mcp-requests.log
+      STARTREK_Llm__Endpoint: http://ollama:11434
+      STARTREK_Llm__Model: qwen3.5:4b
     volumes:
       - ./Data/bm25:/opt/startrek/data/bm25:ro
       - ./Models/multilingual-e5-small:/opt/startrek/models/multilingual-e5-small:ro
       - ./Data/Logs:/opt/startrek/data/logs
     restart: unless-stopped
+
+volumes:
+  ollama-models:

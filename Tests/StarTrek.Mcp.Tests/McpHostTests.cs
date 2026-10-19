@@ -84,11 +84,20 @@ public sealed class McpHostTests
     internal static async Task<WebApplication> Start(
         Action<IServiceCollection>? configureServices = null,
         string mcpPath = "/mcp",
-        string? corpusPath = null)
+        string? corpusPath = null,
+        IDictionary<string, string?>? extraKeys = null)
     {
         var root = Directory.CreateTempSubdirectory().FullName;
         var corpus = corpusPath ?? Path.Combine(root, "missing-corpus.json");
         var keys = TestIndexerOptions.Create(corpus).AsMemoryKeys();
+        if (extraKeys is not null)
+        {
+            foreach (var pair in extraKeys)
+            {
+                keys[pair.Key] = pair.Value;
+            }
+        }
+
         keys["Mcp:Urls"] = "http://127.0.0.1:0";
         keys["Mcp:Path"] = mcpPath;
         keys["Mcp:Logging:Level"] = "Debug";

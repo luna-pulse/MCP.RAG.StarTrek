@@ -1,22 +1,23 @@
 # Архитектура
 
-Поисковая база по русскоязычному корпусу Star Trek. Два процесса на C# / .NET 10: консольный индексатор готовит чанки и два индекса, HTTP-сервер Model Context Protocol отдаёт чанки агенту IDE. Три инструмента поиска возвращают чанки по фразе аргумента `query`. Для будущего `ask_question` зарегистрирован локальный чат Ollama: `CorrectiveRagRetrieval` переписывает вопрос и передаёт запрос в `HybridSearchService`. Оценка чанков, расширение запроса и генерация ответа ещё впереди.
+Поисковая база по русскоязычному корпусу Star Trek. Два процесса на C# / .NET 10: консольный индексатор готовит чанки и два индекса, HTTP-сервер Model Context Protocol отдаёт агенту IDE три поиска по чанкам и ответ инструмента `ask_question`. Поиски возвращают чанки по фразе аргумента `query`. `ask_question` вызывает уже собранный в индексаторе `CorrectiveRagRetrieval`: переписывание вопроса, гибридный поиск и до двух расширений запроса. Релевантность — порог оценки RRF за `IChunkRelevanceEvaluator`. Ответ пишет тот же `IChatClient` Ollama, только по чанкам не ниже порога.
 
-Исходное задание описывало Python, FastMCP, LangGraph и Ollama. В этом репозитории тот же контур поиска собран иначе: нарезка и эмбеддинги — в `StarTrek.Indexer`, поиск — три инструмента MCP, оркестрация ответа остаётся у агента IDE. Обоснование — в [Docs/6. Plan.md](Docs/6.%20Plan.md) и [Docs/8. Спецификация MCP-сервера.md](Docs/8.%20Спецификация%20MCP-сервера.md). Запуск — в [README.md](README.md).
+Исходное задание описывало Python, FastMCP, LangGraph и Ollama. В этом репозитории тот же контур собран иначе: нарезка и эмбеддинги — в `StarTrek.Indexer`, поиск и ответ — инструменты MCP. Обоснование — в [Docs/6. Plan.md](Docs/6.%20Plan.md) и [Docs/8. Спецификация MCP-сервера.md](Docs/8.%20Спецификация%20MCP-сервера.md). Запуск — в [README.md](README.md).
 
 ## Состав
 
 | Часть | Где | Роль |
 |---|---|---|
 | Индексатор | `src/StarTrek.Indexer` | Читает `SourceFiles`, режет по заголовкам, считает векторы, пишет ChromaDB и корпус BM25 |
-| MCP-сервер | `src/StarTrek.Mcp` | Слушает Streamable HTTP и отдаёт три поиска. Ссылается на индексатор, своей копии поиска не держит |
+| MCP-сервер | `src/StarTrek.Mcp` | Слушает Streamable HTTP и отдаёт три поиска и `ask_question`. Ссылается на индексатор, своей копии поиска не держит |
 | Векторное хранилище | контейнер ChromaDB, том `./ChromaDB` | Коллекция `startrek`, 384 измерения |
+| Чат | контейнер Ollama, модель `qwen3.5:4b` | Переписывает и расширяет запрос в индексаторе и пишет ответ `ask_question` |
 | Разреженный индекс | `Data/bm25/corpus.json` | Id чанка и токены Okapi BM25. Текст чанка там не хранится |
 | Черновик нарезки | `Data/staging/` | JSON документов без векторов |
 | Корпус | `SourceFiles/` | Расы, планеты, корабли, сериалы |
 | Тесты | `Tests/StarTrek.Indexer.Tests`, `Tests/StarTrek.Mcp.Tests` | Нарезка, эмбеддинги, поиск, инструменты MCP |
 
-Пакет `Microsoft.SemanticKernel.Core` подключает контракт `IEmbeddingGenerator`. Чат с локальной моделью идёт через `IChatClient` библиотеки OllamaSharp. Секция `Llm`, модель по умолчанию `qwen3.5:4b`. Графа Semantic Kernel, который оценивает чанки и пишет ответ, в решении нет.
+Пакет `Microsoft.SemanticKernel.Core` подключает контракт `IEmbeddingGenerator`. Чат с локальной моделью идёт через `IChatClient` библиотеки OllamaSharp. Секция `Llm`, модель по умолчанию `qwen3.5:4b`. Графа промптов Semantic Kernel нет: переписывание, расширение и ответ — прямые вызовы того же клиента, оценка чанка — порог RRF.
 
 ## Потоки
 
@@ -32,6 +33,7 @@ flowchart LR
   bm25 --> mcp[MCP HTTP /mcp]
   chroma --> mcp
   onnx --> mcp
+  ollama[Ollama qwen3.5:4b] --> mcp
   mcp --> client[Агент IDE]
 ```
 
@@ -141,6 +143,7 @@ flowchart TB
   http --> bm25tool[search_bm25]
   http --> semtool[search_semantic]
   http --> hybtool[find_relevant_docs]
+  http --> asktool[ask_question]
   bm25tool --> lexical[LexicalSearchService]
   semtool --> semantic[SemanticSearchService]
   hybtool --> hybrid[HybridSearchService]
@@ -152,6 +155,9 @@ flowchart TB
   hybrid --> embedder
   hybrid --> chroma
   hybrid --> rrf[ReciprocalRankFusion]
+  asktool --> retrieval[CorrectiveRagRetrieval]
+  retrieval --> hybrid
+  asktool --> chat[IChatClient]
 ```
 
 | Инструмент | Канал | Оценка в ответе |
@@ -159,14 +165,15 @@ flowchart TB
 | `search_bm25` | Токены запроса в Okapi BM25, текст чанка дочитывается из ChromaDB по id | `bm25Score`, больше — ближе |
 | `search_semantic` | Вектор запроса, `limit` ближайших соседей коллекции `startrek` | `distance`, для косинусной коллекции это `1 − сходство`, меньше — ближе |
 | `find_relevant_docs` | Оба списка, затем Reciprocal Rank Fusion | `rrfScore`, больше — выше. Рядом ранги и оценки каналов, если чанк в них был |
+| `ask_question` | Corrective RAG по вопросу, ответ только по чанкам с оценкой RRF не ниже порога | Текст ответа, `sources` (файл и позиция), `meta` (итоговый запрос и число попыток) |
 
-Общие параметры: обязательный `query` и необязательное число результатов. У `search_bm25` и `search_semantic` оно называется `limit`, у `find_relevant_docs` — `top_k`. Пустой запрос — ошибка инструмента, поиск не вызывается. Нет этого параметра — берётся `Indexer:Search:ResultCount` (10). Меньше 1 приводится к 1, больше 20 — к 20. Успешный ответ с нулём чанков значит, что совпадений нет. Ошибка называет, чего не хватает: модель, корпус BM25, коллекция или адрес ChromaDB. Исключение наружу процесс не валит.
+У трёх поисков общий обязательный `query` и необязательное число результатов. У `search_bm25` и `search_semantic` оно называется `limit`, у `find_relevant_docs` — `top_k`. Пустой запрос — ошибка инструмента, поиск не вызывается. Нет этого параметра — берётся `Indexer:Search:ResultCount` (10). Меньше 1 приводится к 1, больше 20 — к 20. Успешный ответ с нулём чанков значит, что совпадений нет. Ошибка называет, чего не хватает: модель, корпус BM25, коллекция или адрес ChromaDB. Исключение наружу процесс не валит. `ask_question` принимает один аргумент `question`. Пустой вопрос — ошибка инструмента.
 
 У `search_bm25` запрос без токенов — ошибка. У `find_relevant_docs` в этом случае канал BM25 пуст, векторный канал всё равно выполняется.
 
 Поля чанка в ответе: `id`, `text`, оценки своего инструмента, `sourceFile`, `title`, `originalTitle`, `entityType`, `sectionPath`, `position`, `chunkIndex`. Нет ключа в metadata — поля нет, пустая строка не подставляется.
 
-Журнал — `ILogger` и файлы GELF через NLog, уровень `Debug`. Старт хоста пишется в `Data/Logs/mcp-init.log`, вызовы инструментов — в `Data/Logs/mcp-requests.log` (входящие `query` и `limit` либо `top_k`, исходящий список чанков или текст ошибки). `GET /health` в журнал запросов не попадает. Канал логирования протокола MCP не включается.
+Журнал — `ILogger` и файлы GELF через NLog, уровень `Debug`. Старт хоста пишется в `Data/Logs/mcp-init.log`, вызовы инструментов — в `Data/Logs/mcp-requests.log` (входящие `query` или `question` и `limit` либо `top_k`, исходящий список чанков, ответ или текст ошибки). `GET /health` в журнал запросов не попадает. Канал логирования протокола MCP не включается.
 
 ## Слияние RRF
 
@@ -177,6 +184,23 @@ score(id) = Σ 1 / (k + rank)
 ```
 
 `rank` считается с 1, `k` — `Indexer:Search:RrfK` (60). Повтор id внутри одного списка учитывается один раз, по первой позиции. Порядок результата: оценка по убыванию, затем лучший ранг, затем id. Чанк, который есть только в одном списке, остаётся в выдаче со вкладом этого списка. Id из старого корпуса BM25, которого уже нет в коллекции, отбрасывается. Клиенту возвращается не больше запрошенного числа чанков: у `find_relevant_docs` это `top_k`.
+
+## Corrective RAG и ask_question
+
+`ask_question` не ищет сам. Он вызывает `CorrectiveRagRetrieval`, оставляет чанки с оценкой не ниже порога и пишет ответ тем же `IChatClient`.
+
+```mermaid
+flowchart TB
+  question[Вопрос] --> rewrite[IQueryRewriter]
+  rewrite --> search[HybridSearchService]
+  search --> grade["IChunkRelevanceEvaluator, порог RRF"]
+  grade -->|хватило чанков| generate[IChatClient]
+  grade -->|мало| broaden[IQueryBroadener]
+  broaden --> search
+  grade -->|после двух расширений пусто| notfound[Фиксированный ответ]
+```
+
+`IQueryRewriter` спрашивает Ollama и при пустом ответе, ошибке или таймауте оставляет исходный вопрос. Если релевантных чанков меньше `Rag:MinRelevantChunks`, `IQueryBroadener` расширяет запрос и поиск повторяется, не больше `MaxBroadenAttempts` раз. Релевантный чанк — тот, чья оценка RRF не ниже `Rag:MinRrfScore`. Если таких чанков с текстом не осталось, модель для ответа не вызывается: возвращается «В базе знаний Star Trek об этом ничего не найдено.» Если чанки остались, ответ пишется только по ним, с файлом и позицией. Ошибка Ollama на шаге ответа и ошибка ChromaDB приходят текстом инструмента, процесс не падает.
 
 ## Конфигурация
 
@@ -201,12 +225,14 @@ score(id) = Σ 1 / (k + rank)
 |---|---|---|
 | `chromadb` | `chromadb/chroma:1.5.9` | API на порту 8000, данные в `./ChromaDB` |
 | `indexer` | `startrek-indexer`, `Dockerfile` | По умолчанию `health-check` |
-| `mcp` | `startrek-mcp`, `Dockerfile.mcp` | Слушает 8080. Монтирует корпус BM25 и папку модели только для чтения, журнал — на запись |
+| `mcp` | `startrek-mcp`, `Dockerfile.mcp` | Слушает 8080. Монтирует корпус BM25 и папку модели только для чтения, журнал — на запись. `STARTREK_Llm__Endpoint=http://ollama:11434`, `STARTREK_Llm__Model=qwen3.5:4b` |
+| `ollama` | `ollama/ollama:latest` | API чата на порту 11434, том `ollama-models` |
+| `ollama-pull` | `ollama/ollama:latest` | Один раз скачивает `qwen3.5:4b` и завершается |
 
-В Compose адрес ChromaDB для обоих процессов — `http://chromadb:8000`.
+В Compose адрес ChromaDB для обоих процессов — `http://chromadb:8000`. Адрес Ollama для `mcp` — `http://ollama:11434`.
 
 ## Граница этого репозитория
 
-Собраны нарезка, локальные эмбеддинги, запись в ChromaDB, корпус BM25 и три поисковых инструмента MCP, включая гибрид со слиянием RRF.
+Собраны нарезка, локальные эмбеддинги, запись в ChromaDB, корпус BM25, три поисковых инструмента MCP и `ask_question`.
 
-Шаг Rewrite Query есть: `IQueryRewriter` спрашивает Ollama и при пустом ответе, ошибке или таймауте оставляет исходный вопрос. `CorrectiveRagRetrieval` ищет переписанный запрос через `HybridSearchService`. Если релевантных чанков меньше порога, `IQueryBroadener` расширяет запрос и поиск повторяется, не больше двух раз. Релевантность сейчас — порог оценки RRF за интерфейсом `IChunkRelevanceEvaluator`. Генерация ответа подключается следующим шагом. Три инструмента MCP отдают чанки по фразе аргумента `query`, ответ по ним пишет агент IDE. Папку индексирует консоль `embed`, статистику индекса `index_status` сервер не отдаёт.
+Три поиска отдают чанки по фразе аргумента `query`. `ask_question` отвечает через `CorrectiveRagRetrieval` и `IChatClient`: переписывание, гибридный поиск, порог RRF и до двух расширений запроса остаются в индексаторе. Папку индексирует консоль `embed`, статистику индекса `index_status` сервер не отдаёт.

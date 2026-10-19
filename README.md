@@ -19,6 +19,7 @@ flowchart TB
     Server --> Bm25["search_bm25\nслова запроса, Okapi BM25"]
     Server --> Semantic["search_semantic\nсмысл запроса в ChromaDB"]
     Server --> Hybrid["find_relevant_docs\nслова и смысл, слияние RRF"]
+    Server --> Ask["ask_question\nответ по чанкам Corrective RAG"]
     Bm25 --> Corpus["Data/bm25/corpus.json"]
     Semantic --> Chroma["ChromaDB, коллекция startrek"]
     Hybrid --> Corpus
@@ -33,7 +34,24 @@ flowchart TB
 - Сурак
 - Иные примеры вопросов в файле [Docs/5. Примеры вопросов.md](Docs/5. Примеры вопросов.md)
 
+### Пример `ask_question`
 
+Факты из `SourceFiles/Races/Вулканцы.txt`. Вулканский корабль первого контакта — «Т'Плана-Хат» (5 апреля 2063 года, варп-полёт «Феникса»). Родители Спока — Сарек и Аманда Грейсон, Спок родился в 2230 году на Вулкане.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "params": {
+    "name": "ask_question",
+    "arguments": {
+      "question": "Как назывался вулканский корабль первого контакта?"
+    }
+  }
+}
+```
+
+Ответ инструмента содержит `answer`, `sources` (`sourceFile`, `position`) и `meta` (итоговый запрос и число попыток). Проверка — имя «Т'Плана-Хат» и файл `SourceFiles/Races/Вулканцы.txt`. Формулировка `answer` принадлежит модели, `position` зависит от нарезки. Модель в Compose — `qwen3.5:4b`, её скачивает сервис `ollama-pull`. Для контейнера `mcp` адрес и тег задаются `STARTREK_Llm__Endpoint=http://ollama:11434` и `STARTREK_Llm__Model=qwen3.5:4b`.
 
 ## Что нужно заранее установить
 
@@ -81,7 +99,7 @@ dotnet run --project src/StarTrek.Indexer -- <команда>
 
 ```powershell
 docker compose build mcp
-docker compose up -d chromadb mcp
+docker compose up -d chromadb ollama ollama-pull mcp
 ```
 
 `docker compose up` по-прежнему не вызывает `analyze`, `chunk` и `embed`. Сервис `indexer` выполняет `health-check` и завершается. Сервис `mcp` остаётся слушать HTTP.
@@ -112,11 +130,13 @@ docker compose up -d chromadb mcp
 docker compose up        # или: docker compose up -d
 ```
 
-Compose поднимает три сервиса. `docker compose up` корпус не индексирует:
+Compose поднимает хранилище, индексатор, MCP и локальную модель. `docker compose up` корпус не индексирует:
 
 - `chromadb` — образ `chromadb/chroma:1.5.9`, контейнер `startrek-chromadb`, порт `8000`, том `./ChromaDB:/data`;
 - `indexer` — образ и контейнер `startrek-indexer`. По умолчанию выполняет только `health-check` и сразу завершается;
-- `mcp` — образ и контейнер `startrek-mcp`, порт `8080`. Слушает HTTP и отдаёт три инструмента поиска. Сборка и адрес клиента — в разделе «2. Запуск MCP-сервера».
+- `ollama` — образ `ollama/ollama:latest`, контейнер `startrek-ollama`, порт `11434`, том `ollama-models`;
+- `ollama-pull` — один раз выполняет `ollama pull qwen3.5:4b` и завершается;
+- `mcp` — образ и контейнер `startrek-mcp`, порт `8080`. Слушает HTTP и отдаёт три инструмента поиска и `ask_question`. В контейнере `STARTREK_Llm__Endpoint=http://ollama:11434` и `STARTREK_Llm__Model=qwen3.5:4b`. Сборка и адрес клиента — в разделе «2. Запуск MCP-сервера».
 
 Локальный доступ к хранилищу:
 
@@ -155,7 +175,7 @@ flowchart LR
 - `Indexer:Chunking` — пороги 480 / 80 токенов и параметры переноса между кусками;
 - `Indexer:Bm25` — `K1 = 1.5`, `B = 0.75`;
 - `Indexer:Search` — параметры гибридного поиска (RRF);
-- `Llm` — локальная модель Ollama для переписывания и расширения запроса: адрес, тег модели, температура и таймаут;
+- `Llm` — локальная модель Ollama для переписывания, расширения запроса и ответа `ask_question`: адрес, тег модели, температура и таймаут;
 - `Rag` — сколько релевантных чанков достаточно (`MinRelevantChunks`), сколько раз расширять запрос (`MaxBroadenAttempts`) и временный порог оценки RRF (`MinRrfScore`).
 
 Адрес, путь `/mcp` и журнал сервера — в [src/StarTrek.Mcp/appsettings.json](src/StarTrek.Mcp/appsettings.json). Пороги поиска сервер читает из файла индексатора. Переопределение — те же переменные `STARTREK_`.
@@ -170,9 +190,9 @@ flowchart LR
 - `search_semantic` — смысл запроса в коллекции `startrek`;
 - `find_relevant_docs` — оба списка, слияние RRF в `HybridSearchService`.
 
-Сервер возвращает чанки. Ответ на вопрос пишет клиент, которому эти чанки отданы: агент IDE или локальная модель.
+Три инструмента поиска возвращают чанки. `ask_question` пишет ответ по чанкам, которые цикл счёл релевантными.
 
-Три инструмента выше передают в индекс фразу аргумента `query`. Вход `CorrectiveRagRetrieval` сначала просит Ollama сжать вопрос до поискового запроса и ищет его через `HybridSearchService`. Если релевантных чанков меньше `Rag:MinRelevantChunks` (по умолчанию 2), запрос расширяется и поиск повторяется, не больше `Rag:MaxBroadenAttempts` раз (по умолчанию 2). Пока оценку чанка не делает модель, релевантным считается чанк с оценкой RRF не ниже `Rag:MinRrfScore`. Одинаковые чанки из разных попыток склеиваются, остаётся большая оценка. Модель по умолчанию — `qwen3.5:4b`, адрес — `http://localhost:11434` (секция `Llm` в `src/StarTrek.Indexer/appsettings.json`). Перед вызовом Ollama должна быть запущена, а модель скачана: `ollama pull qwen3.5:4b`. Другой тег задаётся полем `Llm:Model` или переменной `STARTREK_Llm__Model`. Если модель молчит, возвращает пустой текст или не укладывается в `Llm:TimeoutSeconds`, поиск идёт по исходному или предыдущему запросу.
+Три поиска передают в индекс фразу аргумента `query`. Вход `CorrectiveRagRetrieval` сначала просит Ollama сжать вопрос до поискового запроса и ищет его через `HybridSearchService`. Если релевантных чанков меньше `Rag:MinRelevantChunks` (по умолчанию 2), запрос расширяется и поиск повторяется, не больше `Rag:MaxBroadenAttempts` раз (по умолчанию 2). Пока оценку чанка не делает модель, релевантным считается чанк с оценкой RRF не ниже `Rag:MinRrfScore`. Одинаковые чанки из разных попыток склеиваются, остаётся большая оценка. Модель по умолчанию — `qwen3.5:4b`, адрес — `http://localhost:11434` (секция `Llm` в `src/StarTrek.Indexer/appsettings.json`). Перед вызовом Ollama должна быть запущена, а модель скачана: `ollama pull qwen3.5:4b`. Другой тег задаётся полем `Llm:Model` или переменной `STARTREK_Llm__Model`. Если модель молчит, возвращает пустой текст или не укладывается в `Llm:TimeoutSeconds`, поиск идёт по исходному или предыдущему запросу. `ask_question` вызывает этот же вход и затем просит модель написать ответ. Если чанков с текстом выше порога не осталось, модель для ответа не вызывается и возвращается фиксированная фраза, что в базе знаний ничего не найдено.
 
 ## Тесты
 

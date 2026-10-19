@@ -47,14 +47,14 @@ public sealed class SearchToolsTests
         "Сколько чанков вернуть после слияния RRF. Нет значения — 10. Меньше 1 приводится к 1, больше 20 — к 20.";
 
     [Fact]
-    public async Task ListsExactlyThreeToolsWithFullDescriptions()
+    public async Task ListsExactlyFourToolsWithFullDescriptions()
     {
         await using var app = await McpHostTests.Start(services => PrepareRankDoubles(services, out _, out _));
         await using var client = await ConnectAsync(app, "/mcp");
         var tools = await client.ListToolsAsync();
 
         Assert.Equal(
-            ["find_relevant_docs", "search_bm25", "search_semantic"],
+            ["ask_question", "find_relevant_docs", "search_bm25", "search_semantic"],
             tools.Select(tool => tool.Name).OrderBy(name => name, StringComparer.Ordinal).ToArray());
         Assert.All(tools, tool => Assert.False(string.IsNullOrWhiteSpace(tool.Description)));
         var joined = string.Join('\n', tools.Select(tool => tool.Description));
@@ -310,12 +310,12 @@ public sealed class SearchToolsTests
     public async Task ToolsStayOffRootAndFollowConfiguredPath()
     {
         await using var app = await McpHostTests.Start();
-        Assert.False(await ListsThreeToolsAsync(app, "/"));
-        Assert.True(await ListsThreeToolsAsync(app, "/mcp"));
+        Assert.False(await ListsRegisteredToolsAsync(app, "/"));
+        Assert.True(await ListsRegisteredToolsAsync(app, "/mcp"));
 
         await using var custom = await McpHostTests.Start(mcpPath: "/trek");
-        Assert.False(await ListsThreeToolsAsync(custom, "/mcp"));
-        Assert.True(await ListsThreeToolsAsync(custom, "/trek"));
+        Assert.False(await ListsRegisteredToolsAsync(custom, "/mcp"));
+        Assert.True(await ListsRegisteredToolsAsync(custom, "/trek"));
     }
 
     private static void PrepareRankDoubles(
@@ -383,14 +383,14 @@ public sealed class SearchToolsTests
         return await McpClient.CreateAsync(transport);
     }
 
-    private static async Task<bool> ListsThreeToolsAsync(WebApplication app, string path)
+    private static async Task<bool> ListsRegisteredToolsAsync(WebApplication app, string path)
     {
         try
         {
             await using var client = await ConnectAsync(app, path);
             var tools = await client.ListToolsAsync();
             return tools.Select(tool => tool.Name).OrderBy(name => name, StringComparer.Ordinal).SequenceEqual(
-                ["find_relevant_docs", "search_bm25", "search_semantic"]);
+                ["ask_question", "find_relevant_docs", "search_bm25", "search_semantic"]);
         }
         catch (Exception)
         {

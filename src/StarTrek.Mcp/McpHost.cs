@@ -13,6 +13,7 @@ using ModelContextProtocol.AspNetCore;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using StarTrek.Indexer.Configuration;
+using StarTrek.Mcp.Rag;
 
 namespace StarTrek.Mcp;
 
@@ -32,6 +33,7 @@ public static class McpHost
 
         builder.Services.AddStarTrekSearchRead(builder.Configuration, repositoryRoot);
         builder.Services.Configure<McpOptions>(builder.Configuration.GetSection(McpOptions.SectionName));
+        builder.Services.AddSingleton<AskQuestionService>();
         configureServices?.Invoke(builder.Services);
         // AddStarTrekSearchRead registers the repository root as a string singleton.
         // The MCP SDK treats every resolvable service type as a tool argument, so that
@@ -52,6 +54,7 @@ public static class McpHost
                 options.SessionMode = HttpServerSessionMode.Stateless;
             })
             .WithTools<SearchTools>(CreateToolSerializerOptions())
+            .WithTools<AskQuestionTools>(CreateToolSerializerOptions())
             .WithRequestFilters(filters =>
             {
                 filters.AddCallToolFilter(next => async (context, cancellationToken) =>
@@ -156,10 +159,16 @@ public static class McpHost
         var count = arguments is not null && arguments.ContainsKey(countParameter)
             ? ArgumentText(arguments, countParameter)
             : "нет";
+        var query = ArgumentText(arguments, "query");
+        if (string.IsNullOrEmpty(query))
+        {
+            query = ArgumentText(arguments, "question");
+        }
+
         logger.LogDebug(
             "Входящая модель запроса: инструмент {Tool}, query {Query}, {CountParameter} {Count}.",
             context.Params?.Name,
-            ArgumentText(arguments, "query"),
+            query,
             countParameter,
             count);
     }
@@ -199,7 +208,7 @@ public static class McpHost
         {
             var mcp = options.Value;
             loggerFactory.CreateLogger(McpLog.Initialization).LogDebug(
-                "Слушатель HTTP {Urls}. Конечная точка MCP {Path}. Зарегистрированы инструменты search_bm25, search_semantic и find_relevant_docs.",
+                "Слушатель HTTP {Urls}. Конечная точка MCP {Path}. Зарегистрированы инструменты search_bm25, search_semantic, find_relevant_docs и ask_question.",
                 mcp.Urls,
                 mcp.Path);
             return Task.CompletedTask;
