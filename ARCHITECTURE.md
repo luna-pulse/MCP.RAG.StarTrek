@@ -17,7 +17,7 @@
 | Корпус | `SourceFiles/` | Расы, планеты, корабли, сериалы |
 | Тесты | `Tests/StarTrek.Indexer.Tests`, `Tests/StarTrek.Mcp.Tests` | Нарезка, эмбеддинги, поиск, инструменты MCP |
 
-Пакет `Microsoft.SemanticKernel.Core` подключает контракт `IEmbeddingGenerator`. Чат с локальной моделью идёт через `IChatClient` библиотеки OllamaSharp. Секция `Llm`, модель по умолчанию `qwen3.5:4b`. Графа промптов Semantic Kernel нет: переписывание, расширение и ответ — прямые вызовы того же клиента, оценка чанка — порог RRF.
+Контракт `IEmbeddingGenerator` берётся из `Microsoft.Extensions.AI`. Чат с локальной моделью идёт через `IChatClient` библиотеки OllamaSharp. Секция `Llm`, модель по умолчанию `qwen3.5:4b`. Переписывание, расширение и ответ — прямые вызовы того же клиента, оценка чанка — порог RRF.
 
 ## Потоки
 

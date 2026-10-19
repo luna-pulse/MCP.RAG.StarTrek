@@ -27,7 +27,7 @@ public sealed record HybridSearchResult(
     int Bm25Candidates);
 
 /// <summary>
-/// Поиск для этапа запроса (на нём его вызывает Semantic Kernel: функция плагина или шаг процесса):
+/// Поиск для этапа запроса. Его вызывают Corrective RAG и инструмент find_relevant_docs:
 /// запрос → эмбеддинг с префиксом query: → top-N из Chroma → top-N из BM25 → слияние RRF.
 /// Консольной команды у него нет: это внутренний API.
 /// </summary>

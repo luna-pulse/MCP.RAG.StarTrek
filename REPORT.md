@@ -46,3 +46,11 @@
 
 Ошибка ChromaDB и ошибка Ollama на шаге ответа уходят текстом инструмента MCP, слушатель не падает. Эмбеддинги по-прежнему считает ONNX `intfloat/multilingual-e5-small`, не модель Ollama.
 
+27. Удалён вызов `AddKernel()` из регистрации локального генератора эмбеддингов.
+28. Из `StarTrek.Indexer.csproj` удалён пакет `Microsoft.SemanticKernel.Core`. Вместо него подключён `Microsoft.Extensions.AI` 10.8.0: контракт `IEmbeddingGenerator` и метод `AddEmbeddingGenerator` живут в этом пакете.
+29. Удалены лишние `using Microsoft.SemanticKernel`.
+30. Тесты, которые доставали генератор через `Kernel`, переведены на контейнер служб.
+31. Исправлены комментарии в `HybridSearchService` и `ReciprocalRankFusion`: они больше не говорят, что поиск вызывает Semantic Kernel.
+32. В `README.md` и `ARCHITECTURE.md` убраны формулировки, будто решение использует Semantic Kernel.
+33. Проверены сборка и тесты. `dotnet build` — успешно, 0 предупреждений. `dotnet test` — 276 прошли, 11 пропущены (нет `model.onnx` и живой ChromaDB), падений нет.
+

@@ -10,8 +10,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.31.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.8.0" />
     <PackageReference Include="OllamaSharp" Version="5.5.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.81.0" />
     <PackageReference Include="Tokenizers.HuggingFace" Version="3.23.1" />
   </ItemGroup>
 

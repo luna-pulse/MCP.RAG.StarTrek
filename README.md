@@ -1,4 +1,4 @@
-# RAG Knowledge Base: MCP-сервер с локальной LLM и Microsoft Semantic Kernel
+# RAG Knowledge Base: MCP-сервер с локальной LLM
 
 Поиск по русскоязычному сериалу Star Trek на C# / .NET 10. 
 
