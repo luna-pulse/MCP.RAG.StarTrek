@@ -48,12 +48,3 @@ find_relevant_docs("...") → список релевантных чанков*
 
 1. Весь проект писался с помощью ИИ. Руками написан только 1 файл [REPORT.md](http://REPORT.md) Это было условием ТЗ 
 
-34. Вернул пакет `Microsoft.SemanticKernel.Core` 1.81.0. `AddKernel()` в `AddStarTrekSearchRead` регистрирует ядро и плагин `Search`.
-35. Шаги гибридного поиска оформлены функциями плагина `Search`: `vector_candidates`, `lexical_candidates`, `fuse_ranks`, `assemble_hits`.
-36. `KernelHybridSearch` вызывает эти функции через `kernel.InvokeAsync`. Инструмент `find_relevant_docs` и Corrective RAG идут в `IHybridSearch`, то есть через ядро.
-37. `fuse_ranks` вызывает `ReciprocalRankFusion.Fuse`. Комментарии в `HybridSearchService` и `ReciprocalRankFusion` описывают этот вызов.
-38. Генерация ответа `ask_question` остаётся прямым вызовом `IChatClient`, как описано в `REPORT.AI.md`. Через Kernel оркестрируется гибридный поиск.
-39. В `README.md`, `ARCHITECTURE.md` и `AGENTS.md` написано, что Semantic Kernel оркестрирует гибридный поиск функциями плагина `Search`.
-40. Тест `FindRelevantDocsInvokesSearchPluginThroughKernel` проверяет, что инструмент MCP вызывает четыре функции плагина `Search` через Kernel.
-41. Проверены сборка и тесты. `dotnet build` — успешно, 0 предупреждений. `dotnet test` — 277 прошли, 11 пропущены (нет `model.onnx` и живой ChromaDB), падений нет.
-
