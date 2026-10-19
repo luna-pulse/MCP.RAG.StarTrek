@@ -9,7 +9,7 @@
 - база ChromaDB — коллекция `startrek` с векторами чанков, файлы в папке `ChromaDB`;
 - данные полнотекстового поиска — корпус Okapi BM25 в `Data/bm25/corpus.json`.
 
-Python в решении нет. Гибридный поиск оркестрирует Microsoft Semantic Kernel: инструмент `find_relevant_docs` и шаг Corrective RAG вызывают `KernelHybridSearch`, а тот — функции плагина `Search` (`vector_candidates`, `lexical_candidates`, `fuse_ranks`, `assemble_hits`) через `kernel.InvokeAsync`. Подробности индексации — в [Docs/6. Plan.md](Docs/6.%20Plan.md). Запуск индексатора в Docker — в [Docs/7. План запуска в Docker.md](Docs/7.%20План%20запуска%20в%20Docker.md). Устройство сервера — в [Docs/8. Спецификация MCP-сервера.md](Docs/8.%20Спецификация%20MCP-сервера.md).
+Python в решении нет. Гибридный поиск оркестрирует Microsoft Semantic Kernel (`Microsoft.SemanticKernel.Core` 1.81.0): инструмент `find_relevant_docs` и шаг Corrective RAG вызывают `KernelHybridSearch`, а тот — функции плагина `Search` (`vector_candidates`, `lexical_candidates`, `fuse_ranks`, `assemble_hits`) через `kernel.InvokeAsync`. `search_bm25`, `search_semantic`, переписывание запроса и текст ответа `ask_question` идут мимо ядра: поиск — в свои службы, текст — прямым вызовом `IChatClient`. Подробности индексации — в [Docs/6. Plan.md](Docs/6.%20Plan.md). Запуск индексатора в Docker — в [Docs/7. План запуска в Docker.md](Docs/7.%20План%20запуска%20в%20Docker.md). Устройство сервера — в [Docs/8. Спецификация MCP-сервера.md](Docs/8.%20Спецификация%20MCP-сервера.md).
 
 ## Инструменты MCP
 
@@ -18,12 +18,14 @@ flowchart TB
     Client["Клиент: агент"] --> Server["MCP-сервер"]
     Server --> Bm25["search_bm25\nслова запроса, Okapi BM25"]
     Server --> Semantic["search_semantic\nсмысл запроса в ChromaDB"]
-    Server --> Hybrid["find_relevant_docs\nслова и смысл, слияние RRF"]
+    Server --> Hybrid["find_relevant_docs\nKernel: слова, смысл, RRF"]
     Server --> Ask["ask_question\nответ по чанкам Corrective RAG"]
     Bm25 --> Corpus["Data/bm25/corpus.json"]
-    Semantic --> Chroma["ChromaDB, коллекция startrek"]
+    Bm25 --> Chroma["ChromaDB, коллекция startrek"]
+    Semantic --> Chroma
     Hybrid --> Corpus
     Hybrid --> Chroma
+    Ask --> Ollama["Ollama qwen3.5:4b"]
 ```
 
 
@@ -163,6 +165,7 @@ flowchart LR
   bm25 --> mcp[McpServer]
   chroma --> mcp
   onnx --> mcp
+  ollama[Ollama qwen3.5:4b] --> mcp
   mcp --> client[Клиент MCP]
 ```
 
@@ -192,11 +195,11 @@ flowchart LR
 
 - `search_bm25` — слова запроса в индексе Okapi BM25;
 - `search_semantic` — смысл запроса в коллекции `startrek`;
-- `find_relevant_docs` — оба списка, слияние RRF в `HybridSearchService`.
+- `find_relevant_docs` — оба списка. `KernelHybridSearch` вызывает функции плагина `Search`: `vector_candidates`, `lexical_candidates`, `fuse_ranks` (`ReciprocalRankFusion`) и `assemble_hits`. Шаги, кроме слияния, выполняет `HybridSearchService`.
 
 Три инструмента поиска возвращают чанки. `ask_question` пишет ответ по чанкам, которые цикл счёл релевантными.
 
-Три поиска передают в индекс фразу аргумента `query`. Вход `CorrectiveRagRetrieval` сначала просит Ollama сжать вопрос до поискового запроса и ищет его через `HybridSearchService`. Если релевантных чанков меньше `Rag:MinRelevantChunks` (по умолчанию 2), запрос расширяется и поиск повторяется, не больше `Rag:MaxBroadenAttempts` раз (по умолчанию 2). Пока оценку чанка не делает модель, релевантным считается чанк с оценкой RRF не ниже `Rag:MinRrfScore`. Одинаковые чанки из разных попыток склеиваются, остаётся большая оценка. Модель по умолчанию — `qwen3.5:4b`, адрес — `http://localhost:11434` (секция `Llm` в `src/StarTrek.Indexer/appsettings.json`). Перед вызовом Ollama должна быть запущена, а модель скачана: `ollama pull qwen3.5:4b`. Другой тег задаётся полем `Llm:Model` или переменной `STARTREK_Llm__Model`. Если модель молчит, возвращает пустой текст или не укладывается в `Llm:TimeoutSeconds`, поиск идёт по исходному или предыдущему запросу. `ask_question` вызывает этот же вход и затем просит модель написать ответ. Если чанков с текстом выше порога не осталось, модель для ответа не вызывается и возвращается фиксированная фраза, что в базе знаний ничего не найдено.
+Три поиска передают в индекс фразу аргумента `query`. Вход `CorrectiveRagRetrieval` сначала просит Ollama сжать вопрос до поискового запроса и ищет его через `IHybridSearch` (в регистрации сервера это `KernelHybridSearch`). Переписывание, расширение и текст ответа — прямые вызовы `IChatClient`, не функции ядра. Если релевантных чанков меньше `Rag:MinRelevantChunks` (по умолчанию 2), запрос расширяется и поиск повторяется, не больше `Rag:MaxBroadenAttempts` раз (по умолчанию 2). Пока оценку чанка не делает модель, релевантным считается чанк с оценкой RRF не ниже `Rag:MinRrfScore`. Одинаковые чанки из разных попыток склеиваются, остаётся большая оценка. Модель по умолчанию — `qwen3.5:4b`, адрес — `http://localhost:11434` (секция `Llm` в `src/StarTrek.Indexer/appsettings.json`). Перед вызовом Ollama должна быть запущена, а модель скачана: `ollama pull qwen3.5:4b`. Другой тег задаётся полем `Llm:Model` или переменной `STARTREK_Llm__Model`. Если модель молчит, возвращает пустой текст или не укладывается в `Llm:TimeoutSeconds`, поиск идёт по исходному или предыдущему запросу. `ask_question` вызывает этот же вход и затем просит модель написать ответ. Если чанков с текстом выше порога не осталось, модель для ответа не вызывается и возвращается фиксированная фраза, что в базе знаний ничего не найдено.
 
 ## Тесты
 
