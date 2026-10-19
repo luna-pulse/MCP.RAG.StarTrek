@@ -1,4 +1,4 @@
-# RAG Knowledge Base: MCP-сервер с локальной LLM
+# RAG Knowledge Base: MCP-сервер с локальной LLM и Microsoft Semantic Kernel
 
 Поиск по русскоязычному сериалу Star Trek на C# / .NET 10. 
 
@@ -9,7 +9,7 @@
 - база ChromaDB — коллекция `startrek` с векторами чанков, файлы в папке `ChromaDB`;
 - данные полнотекстового поиска — корпус Okapi BM25 в `Data/bm25/corpus.json`.
 
-Python в решении нет. Подробности индексации — в [Docs/6. Plan.md](Docs/6.%20Plan.md). Запуск индексатора в Docker — в [Docs/7. План запуска в Docker.md](Docs/7.%20План%20запуска%20в%20Docker.md). Устройство сервера — в [Docs/8. Спецификация MCP-сервера.md](Docs/8.%20Спецификация%20MCP-сервера.md).
+Python в решении нет. Гибридный поиск оркестрирует Microsoft Semantic Kernel: инструмент `find_relevant_docs` и шаг Corrective RAG вызывают `KernelHybridSearch`, а тот — функции плагина `Search` (`vector_candidates`, `lexical_candidates`, `fuse_ranks`, `assemble_hits`) через `kernel.InvokeAsync`. Подробности индексации — в [Docs/6. Plan.md](Docs/6.%20Plan.md). Запуск индексатора в Docker — в [Docs/7. План запуска в Docker.md](Docs/7.%20План%20запуска%20в%20Docker.md). Устройство сервера — в [Docs/8. Спецификация MCP-сервера.md](Docs/8.%20Спецификация%20MCP-сервера.md).
 
 ## Инструменты MCP
 

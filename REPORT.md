@@ -46,11 +46,12 @@
 
 Ошибка ChromaDB и ошибка Ollama на шаге ответа уходят текстом инструмента MCP, слушатель не падает. Эмбеддинги по-прежнему считает ONNX `intfloat/multilingual-e5-small`, не модель Ollama.
 
-27. Удалён вызов `AddKernel()` из регистрации локального генератора эмбеддингов.
-28. Из `StarTrek.Indexer.csproj` удалён пакет `Microsoft.SemanticKernel.Core`. Вместо него подключён `Microsoft.Extensions.AI` 10.8.0: контракт `IEmbeddingGenerator` и метод `AddEmbeddingGenerator` живут в этом пакете.
-29. Удалены лишние `using Microsoft.SemanticKernel`.
-30. Тесты, которые доставали генератор через `Kernel`, переведены на контейнер служб.
-31. Исправлены комментарии в `HybridSearchService` и `ReciprocalRankFusion`: они больше не говорят, что поиск вызывает Semantic Kernel.
-32. В `README.md` и `ARCHITECTURE.md` убраны формулировки, будто решение использует Semantic Kernel.
-33. Проверены сборка и тесты. `dotnet build` — успешно, 0 предупреждений. `dotnet test` — 276 прошли, 11 пропущены (нет `model.onnx` и живой ChromaDB), падений нет.
+27. Вернул пакет `Microsoft.SemanticKernel.Core` 1.81.0. `AddKernel()` в `AddStarTrekSearchRead` регистрирует ядро и плагин `Search`.
+28. Шаги гибридного поиска оформлены функциями плагина `Search`: `vector_candidates`, `lexical_candidates`, `fuse_ranks`, `assemble_hits`.
+29. `KernelHybridSearch` вызывает эти функции через `kernel.InvokeAsync`. Инструмент `find_relevant_docs` и Corrective RAG идут в `IHybridSearch`, то есть через ядро.
+30. `fuse_ranks` вызывает `ReciprocalRankFusion.Fuse`. Комментарии в `HybridSearchService` и `ReciprocalRankFusion` описывают этот вызов.
+31. Генерация ответа `ask_question` остаётся прямым вызовом `IChatClient`, как описано выше. Через Kernel оркестрируется гибридный поиск.
+32. В `README.md`, `ARCHITECTURE.md` и `AGENTS.md` написано, что Semantic Kernel оркестрирует гибридный поиск функциями плагина `Search`.
+33. Тест `FindRelevantDocsInvokesSearchPluginThroughKernel` проверяет, что инструмент MCP вызывает четыре функции плагина `Search` через Kernel.
+34. Проверены сборка и тесты. `dotnet build` — успешно, 0 предупреждений. `dotnet test` — 277 прошли, 11 пропущены (нет `model.onnx` и живой ChromaDB), падений нет.
 

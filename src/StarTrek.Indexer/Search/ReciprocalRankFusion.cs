@@ -5,7 +5,8 @@ public sealed record RrfEntry(string Id, double Score, IReadOnlyList<int?> Ranks
 
 /// <summary>
 /// Reciprocal Rank Fusion: score(id) = Σ по спискам 1 / (k + rank), rank считается с 1.
-/// Чистая функция без зависимостей: её вызывает гибридный поиск.
+/// Чистая функция без зависимостей. На рабочем пути MCP её вызывает функция плагина
+/// <c>Search.fuse_ranks</c> через <c>kernel.InvokeAsync</c>.
 /// </summary>
 public static class ReciprocalRankFusion
 {

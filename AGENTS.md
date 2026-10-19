@@ -9,7 +9,7 @@
 ## Стек
 
 - Язык и рантайм: C# / .NET 10 (`global.json`, `net10.0`). Солюшен `MCP.RAG.StarTrek.sln`, проект `src/StarTrek.Indexer`, тесты `Tests/StarTrek.Indexer.Tests` (xUnit).
-- Python, LangChain и LangGraph в решение не добавлять. Позже оркестрация — Microsoft Semantic Kernel.
+- Python, LangChain и LangGraph в решение не добавлять. Гибридный поиск оркестрирует Microsoft Semantic Kernel: плагин `Search`, вызовы `kernel.InvokeAsync`.
 - Платный API эмбеддингов не использовать. Генеративная LLM для нарезки не нужна: границы чанков уже стоят решётками в файлах.
 - Родительские и дочерние чанки не делать. Один чанк и для поиска, и для ответа.
 

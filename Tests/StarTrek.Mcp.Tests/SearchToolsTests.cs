@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
 using ModelContextProtocol;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
@@ -131,6 +132,33 @@ public sealed class SearchToolsTests
         Assert.Equal(["far:0", "near:0"], Ids(result));
         Assert.Equal(2, LastResultCount(handler));
         Assert.False(File.Exists(corpus));
+    }
+
+    [Fact]
+    public async Task FindRelevantDocsInvokesSearchPluginThroughKernel()
+    {
+        var filter = new RecordingKernelFilter();
+        await using var app = await McpHostTests.Start(services =>
+        {
+            PrepareRankDoubles(services, out _, out _);
+            services.AddSingleton<IFunctionInvocationFilter>(filter);
+        });
+        await using var client = await ConnectAsync(app, "/mcp");
+
+        var response = SuccessJson(await client.CallToolAsync(
+            "find_relevant_docs",
+            new Dictionary<string, object?> { ["query"] = "Вулканцы телепаты", ["top_k"] = 10 }));
+
+        Assert.NotEmpty(Ids(response));
+        Assert.Equal(
+            [
+                SearchKernelNames.Vector,
+                SearchKernelNames.Lexical,
+                SearchKernelNames.Fuse,
+                SearchKernelNames.Assemble
+            ],
+            filter.Functions.Select(call => call.Function).ToArray());
+        Assert.All(filter.Functions, call => Assert.Equal(SearchKernelNames.Plugin, call.Plugin));
     }
 
     [Fact]
@@ -395,6 +423,19 @@ public sealed class SearchToolsTests
         catch (Exception)
         {
             return false;
+        }
+    }
+
+    private sealed class RecordingKernelFilter : IFunctionInvocationFilter
+    {
+        public List<(string? Plugin, string Function)> Functions { get; } = [];
+
+        public async Task OnFunctionInvocationAsync(
+            FunctionInvocationContext context,
+            Func<FunctionInvocationContext, Task> next)
+        {
+            Functions.Add((context.Function.PluginName, context.Function.Name));
+            await next(context);
         }
     }
 

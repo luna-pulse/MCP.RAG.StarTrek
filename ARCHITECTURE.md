@@ -19,6 +19,8 @@
 
 Контракт `IEmbeddingGenerator` берётся из `Microsoft.Extensions.AI`. Чат с локальной моделью идёт через `IChatClient` библиотеки OllamaSharp. Секция `Llm`, модель по умолчанию `qwen3.5:4b`. Переписывание, расширение и ответ — прямые вызовы того же клиента, оценка чанка — порог RRF.
 
+Гибридный поиск оркестрирует пакет `Microsoft.SemanticKernel.Core`. `AddStarTrekSearchRead` вызывает `AddKernel()` и кладёт в ядро плагин `Search`. `KernelHybridSearch` — реализация `IHybridSearch`. Инструмент `find_relevant_docs` и `CorrectiveRagRetrieval` вызывают его `SearchAsync`. Метод по очереди делает `kernel.InvokeAsync`: `vector_candidates` (эмбеддинг `query:` и top-N Chroma), `lexical_candidates` (top-N BM25), `fuse_ranks` (`ReciprocalRankFusion.Fuse`) и `assemble_hits` (текст чанков и оценка RRF). `search_bm25` и `search_semantic` ядро не проходят: это отдельные каналы.
+
 ## Потоки
 
 ```mermaid
@@ -146,17 +148,24 @@ flowchart TB
   http --> asktool[ask_question]
   bm25tool --> lexical[LexicalSearchService]
   semtool --> semantic[SemanticSearchService]
-  hybtool --> hybrid[HybridSearchService]
+  hybtool --> kernel[KernelHybridSearch]
+  kernel --> vectorFn[vector_candidates]
+  kernel --> lexicalFn[lexical_candidates]
+  kernel --> fuseFn[fuse_ranks]
+  kernel --> assembleFn[assemble_hits]
   lexical --> corpus[Bm25IndexHolder]
   lexical --> chroma[ChromaHttpClient]
   semantic --> embedder[IQueryEmbeddingGenerator]
   semantic --> chroma
+  vectorFn --> hybrid[HybridSearchService]
+  lexicalFn --> hybrid
+  fuseFn --> rrf[ReciprocalRankFusion]
+  assembleFn --> hybrid
   hybrid --> corpus
   hybrid --> embedder
   hybrid --> chroma
-  hybrid --> rrf[ReciprocalRankFusion]
   asktool --> retrieval[CorrectiveRagRetrieval]
-  retrieval --> hybrid
+  retrieval --> kernel
   asktool --> chat[IChatClient]
 ```
 
