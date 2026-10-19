@@ -37,10 +37,25 @@ public static class LlmServiceCollectionExtensions
                 options => options.MaxOutputTokens > 0 && options.MaxRewrittenCharacters > 0,
                 "В Llm:MaxOutputTokens и Llm:MaxRewrittenCharacters должны быть положительными.")
             .ValidateOnStart();
+        services
+            .AddOptions<RagOptions>()
+            .Bind(configuration.GetSection(RagOptions.SectionName))
+            .Validate(
+                options => options.MinRelevantChunks > 0,
+                "В Rag:MinRelevantChunks должно быть положительное число.")
+            .Validate(
+                options => options.MaxBroadenAttempts >= 0,
+                "В Rag:MaxBroadenAttempts должно быть число от 0.")
+            .Validate(
+                options => double.IsFinite(options.MinRrfScore) && options.MinRrfScore >= 0,
+                "В Rag:MinRrfScore должно быть конечное число от 0.")
+            .ValidateOnStart();
 
         services.AddSingleton<IChatClient>(serviceProvider =>
             new OllamaChatClient(serviceProvider.GetRequiredService<IOptions<LlmOptions>>().Value));
         services.AddSingleton<IQueryRewriter, QueryRewriter>();
+        services.AddSingleton<IQueryBroadener, QueryBroadener>();
+        services.AddSingleton<IChunkRelevanceEvaluator, RrfScoreRelevanceEvaluator>();
         services.AddSingleton<CorrectiveRagRetrieval>();
         return services;
     }

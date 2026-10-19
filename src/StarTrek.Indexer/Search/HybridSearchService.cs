@@ -35,7 +35,7 @@ public sealed class HybridSearchService(
     ChromaHttpClient chroma,
     IQueryEmbeddingGenerator queryEmbedder,
     Bm25IndexHolder bm25,
-    IOptions<IndexerOptions> options)
+    IOptions<IndexerOptions> options) : IHybridSearch
 {
     public async Task<HybridSearchResult> SearchAsync(
         string query,

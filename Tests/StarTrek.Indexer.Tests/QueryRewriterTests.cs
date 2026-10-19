@@ -178,6 +178,11 @@ public sealed class QueryRewriterTests
         Assert.Equal(0.1, llm.Temperature);
         Assert.Equal(30, llm.TimeoutSeconds);
         Assert.True(llm.DisableThinking);
+        var rag = configuration.GetRequiredSection(RagOptions.SectionName).Get<RagOptions>();
+        Assert.NotNull(rag);
+        Assert.Equal(2, rag.MinRelevantChunks);
+        Assert.Equal(2, rag.MaxBroadenAttempts);
+        Assert.Equal(0.015, rag.MinRrfScore);
     }
 
     [Fact]
@@ -206,7 +211,11 @@ public sealed class QueryRewriterTests
 
         Assert.NotNull(provider.GetRequiredService<IChatClient>());
         Assert.NotNull(provider.GetRequiredService<IQueryRewriter>());
+        Assert.NotNull(provider.GetRequiredService<IQueryBroadener>());
+        Assert.NotNull(provider.GetRequiredService<IChunkRelevanceEvaluator>());
         Assert.NotNull(provider.GetRequiredService<CorrectiveRagRetrieval>());
+        Assert.Equal(2, provider.GetRequiredService<IOptions<RagOptions>>().Value.MinRelevantChunks);
+        Assert.Equal(2, provider.GetRequiredService<IOptions<RagOptions>>().Value.MaxBroadenAttempts);
         Assert.Equal("qwen3.5:4b", provider.GetRequiredService<IOptions<LlmOptions>>().Value.Model);
     }
 
@@ -240,6 +249,7 @@ public sealed class CorrectiveRagRetrievalTests : IDisposable
     private readonly string root = Path.Combine(Path.GetTempPath(), "startrek-rag-" + Guid.NewGuid().ToString("N"));
     private readonly FakeChromaServer server = new();
     private readonly FakeQueryEmbedder embedder = new();
+    private readonly List<(string Previous, int Attempt)> broadenerCalls = [];
 
     public CorrectiveRagRetrievalTests()
     {
@@ -261,9 +271,11 @@ public sealed class CorrectiveRagRetrievalTests : IDisposable
 
         Assert.Equal("Расскажи, пожалуйста, про корабль Вояджер", result.Question);
         Assert.Equal("Вояджер NCC-74656", result.SearchQuery);
+        Assert.Equal(0, result.BroadenAttempts);
         Assert.Equal("Вояджер NCC-74656", result.Result.Query);
         Assert.Equal(["Вояджер NCC-74656"], embedder.Queries);
-        Assert.Contains(result.Result.Hits, hit => hit.Id == "voyager:1");
+        Assert.Contains(result.Chunks, hit => hit.Id == "voyager:1");
+        Assert.Empty(broadenerCalls);
     }
 
     [Fact]
@@ -275,6 +287,7 @@ public sealed class CorrectiveRagRetrievalTests : IDisposable
         var result = await retrieval.RetrieveAsync("Вояджер NCC-74656");
 
         Assert.Equal("Вояджер NCC-74656", result.SearchQuery);
+        Assert.Equal(0, result.BroadenAttempts);
         Assert.Equal(["Вояджер NCC-74656"], embedder.Queries);
     }
 
@@ -306,7 +319,19 @@ public sealed class CorrectiveRagRetrievalTests : IDisposable
             holder,
             Options.Create(new IndexerOptions { Chroma = chroma, Search = new SearchOptions() }));
         var rewriter = new QueryRewriter(chat, Options.Create(new LlmOptions()), new ListLogger<QueryRewriter>());
-        return new CorrectiveRagRetrieval(rewriter, hybrid);
+        var broadener = new RecordingBroadener(broadenerCalls);
+        var relevance = new RrfScoreRelevanceEvaluator(Options.Create(new RagOptions
+        {
+            MinRelevantChunks = 1,
+            MinRrfScore = 0
+        }));
+        return new CorrectiveRagRetrieval(
+            rewriter,
+            broadener,
+            relevance,
+            hybrid,
+            Options.Create(new RagOptions { MinRelevantChunks = 1, MinRrfScore = 0 }),
+            new ListLogger<CorrectiveRagRetrieval>());
     }
 
     public void Dispose()
@@ -355,6 +380,19 @@ internal sealed class ScriptedChatClient : IChatClient
 
     public void Dispose()
     {
+    }
+}
+
+internal sealed class RecordingBroadener(List<(string Previous, int Attempt)> calls) : IQueryBroadener
+{
+    public Task<string> BroadenAsync(
+        string originalQuestion,
+        string previousQuery,
+        int attempt,
+        CancellationToken cancellationToken = default)
+    {
+        calls.Add((previousQuery, attempt));
+        return Task.FromResult(previousQuery + " шире");
     }
 }
 

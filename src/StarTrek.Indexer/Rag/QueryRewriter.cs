@@ -40,9 +40,9 @@ public sealed class QueryRewriter(
                     new ChatMessage(ChatRole.System, SystemPrompt),
                     new ChatMessage(ChatRole.User, original)
                 ],
-                CreateOptions(settings),
+                LlmChat.CreateOptions(settings),
                 cancellationToken);
-            var rewritten = QueryRewriteText.Clean(AnswerText(response));
+            var rewritten = LlmChat.ReadAnswer(response);
             if (string.IsNullOrWhiteSpace(rewritten))
             {
                 logger.LogWarning("Модель вернула пустой поисковый запрос. Используется исходный вопрос.");
@@ -70,53 +70,16 @@ public sealed class QueryRewriter(
             return original;
         }
     }
-
-    private static ChatOptions CreateOptions(LlmOptions settings)
-    {
-        var chatOptions = new ChatOptions
-        {
-            ModelId = settings.Model,
-            Temperature = (float)settings.Temperature,
-            MaxOutputTokens = settings.MaxOutputTokens
-        };
-        if (settings.DisableThinking)
-        {
-            // OllamaSharp переводит ReasoningEffort.None в think: false.
-            chatOptions.Reasoning = new ReasoningOptions { Effort = ReasoningEffort.None };
-        }
-
-        return chatOptions;
-    }
-
-    private static string AnswerText(ChatResponse response)
-    {
-        var visible = new List<string>();
-        foreach (var message in response.Messages)
-        {
-            foreach (var content in message.Contents)
-            {
-                if (content is TextReasoningContent)
-                {
-                    continue;
-                }
-
-                if (content is TextContent text && !string.IsNullOrWhiteSpace(text.Text))
-                {
-                    visible.Add(text.Text);
-                }
-            }
-        }
-
-        return visible.Count > 0 ? string.Join('\n', visible) : response.Text ?? string.Empty;
-    }
 }
 
 internal static partial class QueryRewriteText
 {
     private static readonly string[] Prefixes =
     [
+        "broadened query:",
         "search query:",
         "rewritten query:",
+        "расширенный запрос:",
         "поисковый запрос:",
         "переписанный запрос:",
         "query:",
