@@ -88,6 +88,8 @@ public static class SearchServiceCollectionExtensions
         services.AddSingleton<LexicalSearchService>();
         services.AddSingleton<SemanticSearchService>();
         services.AddSingleton<HybridSearchService>();
+        services.AddSingleton<IHybridSearch>(serviceProvider => serviceProvider.GetRequiredService<HybridSearchService>());
+        services.AddStarTrekLlm(configuration);
         return services;
     }
 }
