@@ -55,9 +55,8 @@ flowchart TB
 
 ## Что нужно заранее установить
 
-- **С Docker** — [Docker](https://www.docker.com/);
-- **Без Docker** — SDK .NET 10;
-- ONNX-модель `model.onnx` (~448 МБ): [скачать](https://huggingface.co/intfloat/multilingual-e5-small/resolve/main/onnx/model.onnx) в `Models/multilingual-e5-small/` (нужна для `embed`).
+- **С Docker** — [Docker](https://www.docker.com/). При первом `docker compose up` сервис `model-pull` сам кладёт `model.onnx` в `Models/multilingual-e5-small/`.
+- **Без Docker** — SDK .NET 10. Для `embed` и смыслового поиска нужен `model.onnx` (~448 МБ) в `Models/multilingual-e5-small/`: ссылка в разделе «Модель эмбеддингов». После первого `docker compose up` тот же файл уже лежит на диске.
 
 
 
@@ -99,14 +98,14 @@ dotnet run --project src/StarTrek.Indexer -- <команда>
 
 ```powershell
 docker compose build mcp
-docker compose up -d chromadb ollama ollama-pull mcp
+docker compose up -d chromadb ollama ollama-pull model-pull mcp
 ```
 
 `docker compose up` по-прежнему не вызывает `analyze`, `chunk` и `embed`. Сервис `indexer` выполняет `health-check` и завершается. Сервис `mcp` остаётся слушать HTTP.
 
 Адрес клиента: `http://127.0.0.1:8080/mcp`.
 
-Проверка процесса: `GET http://127.0.0.1:8080/health`. Ответ — код 200 и тело `MCP-сервер отвечает: healthy.` Этот запрос не читает корпус BM25, не грузит ONNX и не вызывает ChromaDB: строка значит, что процесс слушает, а не что индекс на месте. Проверка успешна и без корпуса, и без `model.onnx`.
+Проверка процесса: `GET http://127.0.0.1:8080/health`. Ответ — код 200 и тело `MCP-сервер отвечает: healthy.` Этот запрос не читает корпус BM25, не грузит ONNX и не вызывает ChromaDB: строка значит, что процесс слушает, а не что индекс на месте. Проверка успешна и без корпуса. К старту `mcp` файл `model.onnx` уже скачан сервисом `model-pull`; сам запрос `/health` его не открывает.
 
 Имена инструментов и куда они ходят — на схеме «Инструменты MCP» в начале файла.
 
@@ -116,7 +115,9 @@ docker compose up -d chromadb ollama ollama-pull mcp
 
 `tokenizer.json` лежит в `Models/multilingual-e5-small/` и хранится в git. Это копия модели [intfloat/multilingual-e5-small](https://huggingface.co/intfloat/multilingual-e5-small). Откуда скачаны файлы и на каких правах они используются — в [Models/LICENSE.md](Models/LICENSE.md).
 
-`Models/multilingual-e5-small/model.onnx` в git не входит: файл весит около 448 МБ. Скачайте его и сохраните по пути `Models/multilingual-e5-small/model.onnx`:
+`Models/multilingual-e5-small/model.onnx` в git не входит: файл весит около 448 МБ и в образ Docker не копируется. При `docker compose up` сервис `model-pull` скачивает его в `Models/multilingual-e5-small/model.onnx`, если файла ещё нет или он слишком мал. После этого тот же файл на диске используют локальные `dotnet run` и `embed`.
+
+Без Docker скачайте файл сами и сохраните по тому же пути:
 
 [https://huggingface.co/intfloat/multilingual-e5-small/resolve/main/onnx/model.onnx](https://huggingface.co/intfloat/multilingual-e5-small/resolve/main/onnx/model.onnx)
 
@@ -136,11 +137,12 @@ Compose поднимает хранилище, индексатор, MCP и ло
 - `indexer` — образ и контейнер `startrek-indexer`. По умолчанию выполняет только `health-check` и сразу завершается;
 - `ollama` — образ `ollama/ollama:0.40.6`, контейнер `startrek-ollama`, порт `11434`, том `ollama-models`;
 - `ollama-pull` — один раз выполняет `ollama pull qwen3.5:4b` и завершается;
+- `model-pull` — образ `curlimages/curl:8.23.0`, контейнер `startrek-model-pull`. Если `model.onnx` ещё нет или файл слишком мал, скачивает его в `Models/multilingual-e5-small/` и завершается;
 - `mcp` — образ и контейнер `startrek-mcp`, порт `8080`. Слушает HTTP и отдаёт три инструмента поиска и `ask_question`. В контейнере `STARTREK_Llm__Endpoint=http://ollama:11434` и `STARTREK_Llm__Model=qwen3.5:4b`. Сборка и адрес клиента — в разделе «2. Запуск MCP-сервера».
 
 **Healthcheck.** У `ollama` проверка через `ollama list`: команда обращается к самому серверу внутри контейнера, поэтому сервис считается готовым, только когда реально принимает запросы (`ollama --version` прошла бы раньше, а `curl`/`wget` в образе может не быть).
 
-**Порядок запуска.** `ollama-pull` ждёт, пока `ollama` станет healthy, и один раз скачивает `qwen3.5:4b`. `mcp` стартует только после того, как `ollama` healthy и `ollama-pull` успешно завершился (`service_completed_successfully`), поэтому первые вызовы `ask_question` не падают, пока модель ещё качается. `chromadb` — `service_started`.
+**Порядок запуска.** `model-pull` не ждёт остальные сервисы: проверяет файл на диске и при необходимости скачивает `model.onnx`. `ollama-pull` ждёт, пока `ollama` станет healthy, и один раз скачивает `qwen3.5:4b`. `mcp` стартует только после того, как `ollama` healthy, а `ollama-pull` и `model-pull` успешно завершились (`service_completed_successfully`). Том модели у `mcp` остаётся только для чтения. `indexer` скачивание модели не ждёт. `chromadb` — `service_started`.
 
 Локальный доступ к хранилищу:
 
@@ -184,7 +186,7 @@ flowchart LR
 
 Адрес, путь `/mcp` и журнал сервера — в [src/StarTrek.Mcp/appsettings.json](src/StarTrek.Mcp/appsettings.json). Пороги поиска сервер читает из файла индексатора. Переопределение — те же переменные `STARTREK_`.
 
-Папки `Data/` и `ChromaDB/` хранятся в репозитории. Из `Models/` в git входит `tokenizer.json`; `model.onnx` скачивается отдельно.
+Папки `Data/` и `ChromaDB/` хранятся в репозитории. Из `Models/` в git входит `tokenizer.json`. `model.onnx` в git нет: при первом `docker compose up` его скачивает `model-pull` в `Models/multilingual-e5-small/`.
 
 ## Поиск
 

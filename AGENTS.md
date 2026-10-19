@@ -32,7 +32,7 @@ dotnet run --project src/StarTrek.Indexer -- <команда>
 
 `embed` и `embed --force` запускать только по явной просьбе: команда пишет в ChromaDB и `Data/bm25/`. Если модели нет или API не отвечает, команда останавливается и уже записанное не трогает.
 
-`docker compose up` корпус не индексирует. Сервис `indexer` по умолчанию выполняет `health-check`.
+`docker compose up` корпус не индексирует. Сервис `indexer` по умолчанию выполняет `health-check` и не ждёт `model.onnx`. Сервис `model-pull` до старта `mcp` скачивает `model.onnx` в `Models/multilingual-e5-small/`, если файла ещё нет.
 
 ## Конфигурация
 

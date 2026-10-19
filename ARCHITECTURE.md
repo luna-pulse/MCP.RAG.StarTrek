@@ -106,7 +106,7 @@ flowchart LR
 
 Модель — `intfloat/multilingual-e5-small`, ONNX, 384 измерения. Считает `OnnxE5EmbeddingGenerator` через ONNX Runtime: mean pooling по `last_hidden_state` и L2-нормализация. Платный API не вызывается.
 
-`tokenizer.json` лежит в git. `model.onnx` (~448 МБ) скачивается отдельно в `Models/multilingual-e5-small/` и в образ Docker не входит. Образ монтирует эту папку с хоста только для чтения.
+`tokenizer.json` лежит в git. `model.onnx` (~448 МБ) в образ Docker не входит. При первом `docker compose up` его скачивает init-контейнер `model-pull` в `Models/multilingual-e5-small/` на хосте. Сервис `mcp` монтирует эту папку только для чтения. Локальные `dotnet run` и `embed` используют тот же файл; в git его нет.
 
 ## Хранилища
 
@@ -226,10 +226,11 @@ flowchart TB
 | `chromadb` | `chromadb/chroma:1.5.9` | API на порту 8000, данные в `./ChromaDB` |
 | `indexer` | `startrek-indexer`, `Dockerfile` | По умолчанию `health-check` |
 | `mcp` | `startrek-mcp`, `Dockerfile.mcp` | Слушает 8080. Монтирует корпус BM25 и папку модели только для чтения, журнал — на запись. `STARTREK_Llm__Endpoint=http://ollama:11434`, `STARTREK_Llm__Model=qwen3.5:4b` |
-| `ollama` | `ollama/ollama:latest` | API чата на порту 11434, том `ollama-models` |
-| `ollama-pull` | `ollama/ollama:latest` | Один раз скачивает `qwen3.5:4b` и завершается |
+| `ollama` | `ollama/ollama:0.40.6` | API чата на порту 11434, том `ollama-models` |
+| `ollama-pull` | `ollama/ollama:0.40.6` | Один раз скачивает `qwen3.5:4b` и завершается |
+| `model-pull` | `curlimages/curl:8.23.0` | Скачивает `model.onnx` в `./Models/multilingual-e5-small`, если файла нет, и завершается |
 
-В Compose адрес ChromaDB для обоих процессов — `http://chromadb:8000`. Адрес Ollama для `mcp` — `http://ollama:11434`.
+В Compose адрес ChromaDB для обоих процессов — `http://chromadb:8000`. Адрес Ollama для `mcp` — `http://ollama:11434`. `mcp` стартует после успешного завершения `ollama-pull` и `model-pull`. `indexer` файл модели не ждёт.
 
 ## Граница этого репозитория
 

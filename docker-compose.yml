@@ -53,6 +53,42 @@ services:
         exit 1
     restart: "no"
 
+  model-pull:
+    image: curlimages/curl:8.23.0
+    container_name: startrek-model-pull
+    user: "0"
+    volumes:
+      - ./Models/multilingual-e5-small:/models
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        dest=/models/model.onnx
+        partial=/models/model.onnx.partial
+        url=https://huggingface.co/intfloat/multilingual-e5-small/resolve/main/onnx/model.onnx
+        min_bytes=400000000
+        if [ -f "$$dest" ]; then
+          size=$$(wc -c < "$$dest" | tr -d '[:space:]')
+          if [ "$$size" -ge "$$min_bytes" ]; then
+            rm -f "$$partial"
+            echo "model.onnx уже есть, скачивание не нужно."
+            exit 0
+          fi
+        fi
+        rm -f "$$partial"
+        for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
+          echo "Попытка $$attempt: скачиваю model.onnx"
+          if curl -fL -o "$$partial" "$$url"; then
+            mv -f "$$partial" "$$dest"
+            echo "model.onnx сохранён."
+            exit 0
+          fi
+          rm -f "$$partial"
+          sleep 5
+        done
+        echo "Не удалось скачать model.onnx."
+        exit 1
+    restart: "no"
+
   mcp:
     image: startrek-mcp
     container_name: startrek-mcp
@@ -67,6 +103,8 @@ services:
       ollama:
         condition: service_healthy
       ollama-pull:
+        condition: service_completed_successfully
+      model-pull:
         condition: service_completed_successfully
     environment:
       STARTREK_Indexer__Chroma__Endpoint: http://chromadb:8000

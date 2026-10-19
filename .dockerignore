@@ -7,6 +7,7 @@
 Tests/
 tests/
 Models/multilingual-e5-small/model.onnx
+Models/multilingual-e5-small/model.onnx.partial
 Data/
 data/
 ChromaDB/
