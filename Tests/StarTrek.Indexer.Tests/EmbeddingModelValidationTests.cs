@@ -1,6 +1,5 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel;
 using StarTrek.Indexer.Commands;
 using StarTrek.Indexer.Configuration;
 using StarTrek.Indexer.Embeddings;
@@ -58,9 +57,8 @@ public sealed class EmbeddingModelValidationTests
             var expectedModelPath = Path.Combine(emptyModelDirectory.FullName, "model.onnx");
 
             Assert.NotNull(services.GetRequiredService<CommandDispatcher>());
-            var kernel = services.GetRequiredService<Kernel>();
             var exception = Assert.Throws<FileNotFoundException>(
-                () => kernel.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>());
+                () => services.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>());
 
             Assert.Contains(expectedModelPath, exception.Message);
             Assert.Contains(OnnxE5EmbeddingGenerator.DownloadUrl, exception.Message);

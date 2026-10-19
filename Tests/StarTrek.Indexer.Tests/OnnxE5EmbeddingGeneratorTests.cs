@@ -1,6 +1,5 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SemanticKernel;
 using StarTrek.Indexer.Embeddings;
 using StarTrek.Indexer.Tokenization;
 
@@ -54,11 +53,11 @@ public sealed class OnnxE5EmbeddingGeneratorTests(OnnxE5Fixture fixture) :
     }
 
     [OnnxModelFact]
-    public void SemanticKernelResolvesRegisteredGenerator()
+    public void ServiceProviderResolvesRegisteredGenerator()
     {
         var expected = RequireGenerator();
         var registered =
-            fixture.Kernel!.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+            fixture.Services!.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
         Assert.Same(
             expected,
@@ -66,11 +65,11 @@ public sealed class OnnxE5EmbeddingGeneratorTests(OnnxE5Fixture fixture) :
     }
 
     [OnnxModelFact]
-    public async Task SemanticKernelGeneratorEmbedsTextAsPassage()
+    public async Task RegisteredGeneratorEmbedsTextAsPassage()
     {
         var expected = await RequireGenerator().GeneratePassageAsync(Text);
         var registered =
-            fixture.Kernel!.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+            fixture.Services!.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
         var embeddings = await registered.GenerateAsync([Text]);
 
@@ -126,7 +125,7 @@ public sealed class OnnxE5Fixture : IDisposable
     private readonly ServiceProvider? serviceProvider;
 
     public OnnxE5EmbeddingGenerator? Generator { get; }
-    public Kernel? Kernel { get; }
+    public ServiceProvider? Services => serviceProvider;
 
     public OnnxE5Fixture()
     {
@@ -137,7 +136,6 @@ public sealed class OnnxE5Fixture : IDisposable
 
         serviceProvider = TestEnvironment.BuildIndexerServices();
         Generator = serviceProvider.GetRequiredService<OnnxE5EmbeddingGenerator>();
-        Kernel = serviceProvider.GetRequiredService<Kernel>();
     }
 
     public void Dispose() => serviceProvider?.Dispose();

@@ -17,7 +17,9 @@
 | Корпус | `SourceFiles/` | Расы, планеты, корабли, сериалы |
 | Тесты | `Tests/StarTrek.Indexer.Tests`, `Tests/StarTrek.Mcp.Tests` | Нарезка, эмбеддинги, поиск, инструменты MCP |
 
-Пакет `Microsoft.SemanticKernel.Core` подключает контракт `IEmbeddingGenerator`. Чат с локальной моделью идёт через `IChatClient` библиотеки OllamaSharp. Секция `Llm`, модель по умолчанию `qwen3.5:4b`. Графа промптов Semantic Kernel нет: переписывание, расширение и ответ — прямые вызовы того же клиента, оценка чанка — порог RRF.
+Контракт `IEmbeddingGenerator` берётся из `Microsoft.Extensions.AI` 10.8.0, веса считает ONNX Runtime 1.31.0. Чат с локальной моделью идёт через `IChatClient` библиотеки OllamaSharp 5.5.0. Секция `Llm`, модель по умолчанию `qwen3.5:4b`. Переписывание, расширение и ответ — прямые вызовы того же клиента, не функции ядра. Оценка чанка — порог RRF.
+
+Гибридный поиск оркестрирует пакет `Microsoft.SemanticKernel.Core` 1.81.0. `AddStarTrekSearchRead` вызывает `AddKernel()` и кладёт в ядро плагин `Search` (`SearchKernelPlugin`). `KernelHybridSearch` — реализация `IHybridSearch`, которую получает сервер. Инструмент `find_relevant_docs` и `CorrectiveRagRetrieval` вызывают его `SearchAsync`. Метод по очереди делает `kernel.InvokeAsync`: `vector_candidates` (эмбеддинг `query:` и top-N Chroma), `lexical_candidates` (top-N BM25), `fuse_ranks` (`ReciprocalRankFusion.Fuse`) и `assemble_hits` (текст чанков и оценка RRF). Шаги, кроме слияния, выполняет `HybridSearchService`. `search_bm25` и `search_semantic` ядро не проходят: это отдельные каналы. HTTP-транспорт MCP — пакет `ModelContextProtocol.AspNetCore` 2.2.0.
 
 ## Потоки
 
@@ -65,12 +67,12 @@ flowchart LR
 | `Embeddings` | ONNX Runtime, mean pooling, L2-нормализация, префиксы `passage: ` и `query: ` |
 | `Chroma` | HTTP-клиент коллекции `startrek` |
 | `Bm25` | Okapi BM25, токенизатор, файл корпуса, держатель индекса в памяти |
-| `Search` | Смысловой поиск, поиск по словам, слияние RRF |
-| `Rag` | Переписывание вопроса и передача запроса в гибридный поиск |
+| `Search` | Смысловой и лексический поиск, RRF, плагин `Search` и `KernelHybridSearch` |
+| `Rag` | Переписывание и расширение запроса, порог RRF, цикл Corrective RAG |
 | `Commands` | `analyze`, `chunk`, `embed`, `health-check`, `help` |
 | `Configuration` | `appsettings.json`, переменные `STARTREK_`, регистрация служб |
 
-Команды индексации регистрирует `AddStarTrekIndexer`. Сервер эту регистрацию не подключает: она поднимает команды записи и при первом обращении к генератору требует `model.onnx`. Для чтения сервер вызывает `AddStarTrekSearchRead`: клиент ChromaDB, держатель BM25, три поиска и ленивый генератор запроса. ONNX создаётся внутри смыслового или гибридного вызова, а не при старте слушателя.
+Команды индексации регистрирует `AddStarTrekIndexer`. Сервер эту регистрацию не подключает: она поднимает команды записи и при первом обращении к генератору требует `model.onnx`. Для чтения сервер вызывает `AddStarTrekSearchRead`: клиент ChromaDB, держатель BM25, три поиска, `AddKernel()` с плагином `Search`, `KernelHybridSearch` как `IHybridSearch`, клиент Ollama и ленивый генератор запроса. ONNX создаётся внутри смыслового или гибридного вызова, а не при старте слушателя.
 
 ## Нарезка
 
@@ -106,7 +108,7 @@ flowchart LR
 
 Модель — `intfloat/multilingual-e5-small`, ONNX, 384 измерения. Считает `OnnxE5EmbeddingGenerator` через ONNX Runtime: mean pooling по `last_hidden_state` и L2-нормализация. Платный API не вызывается.
 
-`tokenizer.json` лежит в git. `model.onnx` (~448 МБ) скачивается отдельно в `Models/multilingual-e5-small/` и в образ Docker не входит. Образ монтирует эту папку с хоста только для чтения.
+`tokenizer.json` лежит в git. `model.onnx` (~448 МБ) скачивается отдельно в `Models/multilingual-e5-small/` и в образ Docker не входит. Compose монтирует эту папку в контейнер `mcp` только для чтения. Контейнер `indexer` модель не монтирует: его команда по умолчанию — `health-check`.
 
 ## Хранилища
 
@@ -146,17 +148,24 @@ flowchart TB
   http --> asktool[ask_question]
   bm25tool --> lexical[LexicalSearchService]
   semtool --> semantic[SemanticSearchService]
-  hybtool --> hybrid[HybridSearchService]
+  hybtool --> kernel[KernelHybridSearch]
+  kernel --> vectorFn[vector_candidates]
+  kernel --> lexicalFn[lexical_candidates]
+  kernel --> fuseFn[fuse_ranks]
+  kernel --> assembleFn[assemble_hits]
   lexical --> corpus[Bm25IndexHolder]
   lexical --> chroma[ChromaHttpClient]
   semantic --> embedder[IQueryEmbeddingGenerator]
   semantic --> chroma
+  vectorFn --> hybrid[HybridSearchService]
+  lexicalFn --> hybrid
+  fuseFn --> rrf[ReciprocalRankFusion]
+  assembleFn --> hybrid
   hybrid --> corpus
   hybrid --> embedder
   hybrid --> chroma
-  hybrid --> rrf[ReciprocalRankFusion]
   asktool --> retrieval[CorrectiveRagRetrieval]
-  retrieval --> hybrid
+  retrieval --> kernel
   asktool --> chat[IChatClient]
 ```
 
@@ -167,17 +176,17 @@ flowchart TB
 | `find_relevant_docs` | Оба списка, затем Reciprocal Rank Fusion | `rrfScore`, больше — выше. Рядом ранги и оценки каналов, если чанк в них был |
 | `ask_question` | Corrective RAG по вопросу, ответ только по чанкам с оценкой RRF не ниже порога | Текст ответа, `sources` (файл и позиция), `meta` (итоговый запрос и число попыток) |
 
-У трёх поисков общий обязательный `query` и необязательное число результатов. У `search_bm25` и `search_semantic` оно называется `limit`, у `find_relevant_docs` — `top_k`. Пустой запрос — ошибка инструмента, поиск не вызывается. Нет этого параметра — берётся `Indexer:Search:ResultCount` (10). Меньше 1 приводится к 1, больше 20 — к 20. Успешный ответ с нулём чанков значит, что совпадений нет. Ошибка называет, чего не хватает: модель, корпус BM25, коллекция или адрес ChromaDB. Исключение наружу процесс не валит. `ask_question` принимает один аргумент `question`. Пустой вопрос — ошибка инструмента.
+У трёх поисков общий обязательный `query` и необязательное число результатов. У `search_bm25` и `search_semantic` оно называется `limit`, у `find_relevant_docs` — `top_k`. Пустой запрос — ошибка инструмента, поиск не вызывается. Нет этого параметра — берётся `Indexer:Search:ResultCount` (10). Меньше 1 приводится к 1. Потолок — меньшее из `VectorTopN` и `Bm25TopN` (сейчас оба равны 20): большее значение обрезается до этого потолка. Успешный ответ с нулём чанков значит, что совпадений нет. Ошибка называет, чего не хватает: модель, корпус BM25, коллекция или адрес ChromaDB. Исключение наружу процесс не валит. `ask_question` принимает один аргумент `question`. Пустой вопрос — ошибка инструмента.
 
 У `search_bm25` запрос без токенов — ошибка. У `find_relevant_docs` в этом случае канал BM25 пуст, векторный канал всё равно выполняется.
 
 Поля чанка в ответе: `id`, `text`, оценки своего инструмента, `sourceFile`, `title`, `originalTitle`, `entityType`, `sectionPath`, `position`, `chunkIndex`. Нет ключа в metadata — поля нет, пустая строка не подставляется.
 
-Журнал — `ILogger` и файлы GELF через NLog, уровень `Debug`. Старт хоста пишется в `Data/Logs/mcp-init.log`, вызовы инструментов — в `Data/Logs/mcp-requests.log` (входящие `query` или `question` и `limit` либо `top_k`, исходящий список чанков, ответ или текст ошибки). `GET /health` в журнал запросов не попадает. Канал логирования протокола MCP не включается.
+Журнал — `ILogger` и файлы GELF через NLog 4.7.15 (`NLog.Extensions.Logging` 1.7.5, `NLog.GelfLayout` 1.5.0), уровень `Debug`. Старт хоста пишется в `Data/Logs/mcp-init.log`, вызовы инструментов — в `Data/Logs/mcp-requests.log` (входящие `query` или `question` и `limit` либо `top_k`, исходящий список чанков, ответ или текст ошибки). `GET /health` в журнал запросов не попадает. Канал логирования протокола MCP не включается.
 
 ## Слияние RRF
 
-`HybridSearchService` считает вектор запроса, берёт `VectorTopN` соседей ChromaDB и `Bm25TopN` попаданий BM25 (оба порога сейчас 20), затем сливает списки:
+На пути MCP списки считает `KernelHybridSearch`. Функции `vector_candidates` и `lexical_candidates` берут `VectorTopN` соседей ChromaDB и `Bm25TopN` попаданий BM25 (оба порога сейчас 20). `fuse_ranks` сливает их:
 
 ```text
 score(id) = Σ 1 / (k + rank)
@@ -192,7 +201,7 @@ score(id) = Σ 1 / (k + rank)
 ```mermaid
 flowchart TB
   question[Вопрос] --> rewrite[IQueryRewriter]
-  rewrite --> search[HybridSearchService]
+  rewrite --> search[KernelHybridSearch]
   search --> grade["IChunkRelevanceEvaluator, порог RRF"]
   grade -->|хватило чанков| generate[IChatClient]
   grade -->|мало| broaden[IQueryBroadener]
@@ -226,8 +235,8 @@ flowchart TB
 | `chromadb` | `chromadb/chroma:1.5.9` | API на порту 8000, данные в `./ChromaDB` |
 | `indexer` | `startrek-indexer`, `Dockerfile` | По умолчанию `health-check` |
 | `mcp` | `startrek-mcp`, `Dockerfile.mcp` | Слушает 8080. Монтирует корпус BM25 и папку модели только для чтения, журнал — на запись. `STARTREK_Llm__Endpoint=http://ollama:11434`, `STARTREK_Llm__Model=qwen3.5:4b` |
-| `ollama` | `ollama/ollama:latest` | API чата на порту 11434, том `ollama-models` |
-| `ollama-pull` | `ollama/ollama:latest` | Один раз скачивает `qwen3.5:4b` и завершается |
+| `ollama` | `ollama/ollama:0.40.6` | API чата на порту 11434, том `ollama-models`. Готовность — `ollama list` |
+| `ollama-pull` | `ollama/ollama:0.40.6` | После healthy у `ollama` скачивает `qwen3.5:4b` и завершается. `mcp` ждёт этот успех |
 
 В Compose адрес ChromaDB для обоих процессов — `http://chromadb:8000`. Адрес Ollama для `mcp` — `http://ollama:11434`.
 
