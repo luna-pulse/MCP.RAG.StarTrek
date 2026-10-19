@@ -20,7 +20,7 @@ namespace StarTrek.Mcp.Tests;
 public sealed class SearchToolsTests
 {
     private const string Bm25Description =
-        "Ищет чанки корпуса Star Trek по словам запроса в индексе Okapi BM25 (k1 = 1.5, b = 0.75). Запрос — русская фраза любой длины: одно слово или несколько. Строка режется тем же Bm25Tokenizer, которым собран корпус; это не string.Contains и не поиск только кода корабля. Вызывай, когда важны сами слова вопроса: обычные русские слова, имена, термины, номера вроде NCC-1701-D. Не вызывай, когда нужны смысл и перефраз без совпадения слов: для смысла есть search_semantic, для обоих каналов — search_hybrid. Индекс не перестраивает и файлы не индексирует.";
+        "Ищет чанки корпуса Star Trek по словам запроса в индексе Okapi BM25 (k1 = 1.5, b = 0.75). Запрос — русская фраза любой длины: одно слово или несколько. Строка режется тем же Bm25Tokenizer, которым собран корпус; это не string.Contains и не поиск только кода корабля. Вызывай, когда важны сами слова вопроса: обычные русские слова, имена, термины, номера вроде NCC-1701-D. Не вызывай, когда нужны смысл и перефраз без совпадения слов: для смысла есть search_semantic, для обоих каналов — find_relevant_docs. Индекс не перестраивает и файлы не индексирует.";
 
     private const string Bm25QueryDescription =
         "Фраза любой длины: одно или несколько слов на русском или идентификатор. Регистр не важен. Токенизатор режет её на слова; отдельного поиска подстроки нет.";
@@ -29,7 +29,7 @@ public sealed class SearchToolsTests
         "Сколько чанков вернуть. Нет значения — 10. Меньше 1 приводится к 1, больше 20 — к 20.";
 
     private const string SemanticDescription =
-        "Ищет чанки корпуса Star Trek по смыслу запроса в коллекции ChromaDB startrek. Вектор считает локальная модель intfloat/multilingual-e5-small, 384 измерения. Вызывай, когда вопрос задан своими словами и нужный фрагмент может быть другими словами. Не вызывай, когда важны сами слова запроса без перефраза: для слов есть search_bm25. Если нужны и слова, и смысл — search_hybrid. Ответ не сочиняет, только возвращает чанки и расстояние.";
+        "Ищет чанки корпуса Star Trek по смыслу запроса в коллекции ChromaDB startrek. Вектор считает локальная модель intfloat/multilingual-e5-small, 384 измерения. Вызывай, когда вопрос задан своими словами и нужный фрагмент может быть другими словами. Не вызывай, когда важны сами слова запроса без перефраза: для слов есть search_bm25. Если нужны и слова, и смысл — find_relevant_docs. Ответ не сочиняет, только возвращает чанки и расстояние.";
 
     private const string SemanticQueryDescription =
         "Вопрос или фраза своими словами. В хранилище уходит вектор, а не поиск подстроки.";
@@ -54,17 +54,23 @@ public sealed class SearchToolsTests
         var tools = await client.ListToolsAsync();
 
         Assert.Equal(
-            ["ask_question", "search_bm25", "search_hybrid", "search_semantic"],
+            ["ask_question", "find_relevant_docs", "search_bm25", "search_semantic"],
             tools.Select(tool => tool.Name).OrderBy(name => name, StringComparer.Ordinal).ToArray());
         Assert.All(tools, tool => Assert.False(string.IsNullOrWhiteSpace(tool.Description)));
         var joined = string.Join('\n', tools.Select(tool => tool.Description));
         Assert.Contains("search_bm25", joined);
         Assert.Contains("search_semantic", joined);
-        Assert.Contains("search_hybrid", joined);
+        Assert.Contains("find_relevant_docs", joined);
 
         AssertTool(nameof(SearchTools.SearchBm25), "search_bm25", Bm25Description, Bm25QueryDescription, Bm25LimitDescription);
         AssertTool(nameof(SearchTools.SearchSemantic), "search_semantic", SemanticDescription, SemanticQueryDescription, SemanticLimitDescription);
-        AssertTool(nameof(SearchTools.SearchHybrid), "search_hybrid", HybridDescription, HybridQueryDescription, HybridLimitDescription);
+        AssertTool(
+            nameof(SearchTools.FindRelevantDocs),
+            "find_relevant_docs",
+            HybridDescription,
+            HybridQueryDescription,
+            HybridLimitDescription,
+            "top_k");
     }
 
     [Fact]
@@ -128,14 +134,16 @@ public sealed class SearchToolsTests
     }
 
     [Fact]
-    public async Task SearchHybridMatchesServiceAndKeepsVectorOnlyQuery()
+    public async Task FindRelevantDocsMatchesServiceAndKeepsVectorOnlyQuery()
     {
         RecordingQueryEmbedder embedder = null!;
         await using var app = await McpHostTests.Start(services => PrepareRankDoubles(services, out _, out embedder));
         await using var client = await ConnectAsync(app, "/mcp");
         const string query = "Вулканцы телепаты";
         var direct = await app.Services.GetRequiredService<HybridSearchService>().SearchAsync(query, 10);
-        var viaTool = SuccessJson(await client.CallToolAsync("search_hybrid", Args(query, 10)));
+        var viaTool = SuccessJson(await client.CallToolAsync(
+            "find_relevant_docs",
+            new Dictionary<string, object?> { ["query"] = query, ["top_k"] = 10 }));
         var expected = direct.Hits.Select(SearchChunkMapper.FromHybridHit).Select(chunk => chunk.RrfScore).ToArray();
         var actual = viaTool["chunks"]!.AsArray().Select(chunk => chunk!["rrfScore"]!.GetValue<double>()).ToArray();
         Assert.Equal(expected.Length, actual.Length);
@@ -156,7 +164,7 @@ public sealed class SearchToolsTests
             services.AddSingleton(BuiltHolder());
         });
         await using var vectorClient = await ConnectAsync(vectorHost, "/mcp");
-        var vectorOnly = SuccessJson(await vectorClient.CallToolAsync("search_hybrid", Args("???")));
+        var vectorOnly = SuccessJson(await vectorClient.CallToolAsync("find_relevant_docs", Args("???")));
         Assert.Equal("???", Assert.Single(vectorEmbedder.Queries));
         var only = Assert.Single(vectorOnly["chunks"]!.AsArray());
         Assert.Equal(1d / 61d, only!["rrfScore"]!.GetValue<double>(), precision: 10);
@@ -227,7 +235,7 @@ public sealed class SearchToolsTests
         }, corpusPath: corpus);
         await using var client = await ConnectAsync(app, "/mcp");
 
-        foreach (var tool in new[] { "search_bm25", "search_hybrid" })
+        foreach (var tool in new[] { "search_bm25", "find_relevant_docs" })
         {
             var result = await client.CallToolAsync(tool, Args("вулканцы"));
             Assert.True(result.IsError);
@@ -382,7 +390,7 @@ public sealed class SearchToolsTests
             await using var client = await ConnectAsync(app, path);
             var tools = await client.ListToolsAsync();
             return tools.Select(tool => tool.Name).OrderBy(name => name, StringComparer.Ordinal).SequenceEqual(
-                ["ask_question", "search_bm25", "search_hybrid", "search_semantic"]);
+                ["ask_question", "find_relevant_docs", "search_bm25", "search_semantic"]);
         }
         catch (Exception)
         {
@@ -428,7 +436,8 @@ public sealed class SearchToolsTests
         string toolName,
         string description,
         string queryDescription,
-        string limitDescription)
+        string limitDescription,
+        string countParameterName = "limit")
     {
         var method = typeof(SearchTools).GetMethod(methodName)!;
         var tool = method.GetCustomAttribute<McpServerToolAttribute>()!;
@@ -437,7 +446,7 @@ public sealed class SearchToolsTests
         Assert.True(tool.UseStructuredContent);
         Assert.Equal(description, method.GetCustomAttribute<DescriptionAttribute>()!.Description);
         Assert.Equal(queryDescription, DescriptionOf(method, "query"));
-        Assert.Equal(limitDescription, DescriptionOf(method, "limit"));
+        Assert.Equal(limitDescription, DescriptionOf(method, countParameterName));
         Assert.Contains(method.GetParameters(), parameter => parameter.ParameterType == typeof(CancellationToken));
     }
 

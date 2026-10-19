@@ -6,12 +6,12 @@ using StarTrek.Mcp.Rag;
 namespace StarTrek.Mcp;
 
 [McpServerToolType]
-public sealed class AskQuestionTools(CorrectiveRagService rag)
+public sealed class AskQuestionTools(AskQuestionService rag)
 {
     public const string EmptyQuestionMessage = "Вопрос пуст: нужна непустая фраза.";
 
     [McpServerTool(Name = "ask_question", ReadOnly = true, UseStructuredContent = true)]
-    [Description("Отвечает на вопрос по русскоязычной базе знаний Star Trek: расы, планеты, корабли и сериалы. Внутри переписывает вопрос, ищет чанки гибридным поиском (BM25 и вектор ChromaDB, слияние RRF), оценивает релевантность и пишет ответ только по найденным фрагментам, с файлом и позицией источника. Вызывай, когда пользователь спрашивает факт о вселенной Star Trek и нужен готовый ответ, а не список чанков. Не вызывай для кода, чужих проектов и вопросов не про Star Trek. Если нужны сами чанки без ответа — search_hybrid, search_bm25 или search_semantic. Индекс не меняет.")]
+    [Description("Отвечает на вопрос по русскоязычной базе знаний Star Trek: расы, планеты, корабли и сериалы. Внутри Corrective RAG: переписывает вопрос, ищет чанки гибридным поиском (BM25 и вектор ChromaDB, слияние RRF), при нехватке релевантных чанков расширяет запрос до двух раз и пишет ответ только по фрагментам с оценкой RRF не ниже порога, с файлом и позицией источника. Вызывай, когда пользователь спрашивает факт о вселенной Star Trek и нужен готовый ответ, а не список чанков. Не вызывай для кода, чужих проектов и вопросов не про Star Trek. Если нужны сами чанки без ответа — find_relevant_docs, search_bm25 или search_semantic. Индекс не меняет.")]
     public Task<AskQuestionResponse> AskQuestion(
         [Description("Вопрос о факте из базы знаний Star Trek: имя, корабль, дата, раса или серия. Пустая строка — ошибка.")] string question,
         CancellationToken cancellationToken = default) =>

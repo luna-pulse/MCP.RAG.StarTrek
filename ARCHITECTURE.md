@@ -1,8 +1,8 @@
 # Архитектура
 
-Поисковая база по русскоязычному корпусу Star Trek. Два процесса на C# / .NET 10: консольный индексатор готовит чанки и два индекса, HTTP-сервер Model Context Protocol отдаёт чанки и готовый ответ. Инструмент `ask_question` проводит вопрос через Corrective RAG: локальная модель Ollama переписывает запрос, оценивает чанки и пишет ответ только по найденным фрагментам. Три поиска по-прежнему отдают чанки без генерации.
+Поисковая база по русскоязычному корпусу Star Trek. Два процесса на C# / .NET 10: консольный индексатор готовит чанки и два индекса, HTTP-сервер Model Context Protocol отдаёт агенту IDE три поиска по чанкам и ответ инструмента `ask_question`. Поиски возвращают чанки по фразе аргумента `query`. `ask_question` вызывает уже собранный в индексаторе `CorrectiveRagRetrieval`: переписывание вопроса, гибридный поиск и до двух расширений запроса. Релевантность — порог оценки RRF за `IChunkRelevanceEvaluator`. Ответ пишет тот же `IChatClient` Ollama, только по чанкам не ниже порога.
 
-Исходное задание описывало Python, FastMCP, LangGraph и Ollama. В этом репозитории тот же контур поиска собран иначе: нарезка и эмбеддинги — в `StarTrek.Indexer`, поиск — три инструмента MCP, оркестрация ответа остаётся у агента IDE. Обоснование — в [Docs/6. Plan.md](Docs/6.%20Plan.md) и [Docs/8. Спецификация MCP-сервера.md](Docs/8.%20Спецификация%20MCP-сервера.md). Запуск — в [README.md](README.md).
+Исходное задание описывало Python, FastMCP, LangGraph и Ollama. В этом репозитории тот же контур собран иначе: нарезка и эмбеддинги — в `StarTrek.Indexer`, поиск и ответ — инструменты MCP. Обоснование — в [Docs/6. Plan.md](Docs/6.%20Plan.md) и [Docs/8. Спецификация MCP-сервера.md](Docs/8.%20Спецификация%20MCP-сервера.md). Запуск — в [README.md](README.md).
 
 ## Состав
 
@@ -10,14 +10,14 @@
 |---|---|---|
 | Индексатор | `src/StarTrek.Indexer` | Читает `SourceFiles`, режет по заголовкам, считает векторы, пишет ChromaDB и корпус BM25 |
 | MCP-сервер | `src/StarTrek.Mcp` | Слушает Streamable HTTP и отдаёт три поиска и `ask_question`. Ссылается на индексатор, своей копии поиска не держит |
-| Локальная LLM | контейнер Ollama, модель `qwen2.5:3b` | Переписывает запрос, оценивает чанки и пишет ответ. Эмбеддинги считает по-прежнему ONNX, не Ollama |
 | Векторное хранилище | контейнер ChromaDB, том `./ChromaDB` | Коллекция `startrek`, 384 измерения |
+| Чат | контейнер Ollama, модель `qwen3.5:4b` | Переписывает и расширяет запрос в индексаторе и пишет ответ `ask_question` |
 | Разреженный индекс | `Data/bm25/corpus.json` | Id чанка и токены Okapi BM25. Текст чанка там не хранится |
 | Черновик нарезки | `Data/staging/` | JSON документов без векторов |
 | Корпус | `SourceFiles/` | Расы, планеты, корабли, сериалы |
 | Тесты | `Tests/StarTrek.Indexer.Tests`, `Tests/StarTrek.Mcp.Tests` | Нарезка, эмбеддинги, поиск, инструменты MCP |
 
-Пакет `Microsoft.SemanticKernel.Core` подключает контракт `IEmbeddingGenerator`. Пакет `Microsoft.SemanticKernel.Connectors.Ollama` подключает чат к локальной Ollama через `IChatClient`. Четыре функции ядра — Rewrite, Grade, Broaden и Generate — читают текст из `src/StarTrek.Mcp/Prompts`. Цикл Corrective RAG собран в `CorrectiveRagService`, а не в Process Framework: у графа один условный повтор, и тесты проверяют его напрямую.
+Пакет `Microsoft.SemanticKernel.Core` подключает контракт `IEmbeddingGenerator`. Чат с локальной моделью идёт через `IChatClient` библиотеки OllamaSharp. Секция `Llm`, модель по умолчанию `qwen3.5:4b`. Графа промптов Semantic Kernel нет: переписывание, расширение и ответ — прямые вызовы того же клиента, оценка чанка — порог RRF.
 
 ## Потоки
 
@@ -33,11 +33,11 @@ flowchart LR
   bm25 --> mcp[MCP HTTP /mcp]
   chroma --> mcp
   onnx --> mcp
-  ollama[Ollama qwen2.5:3b] --> mcp
+  ollama[Ollama qwen3.5:4b] --> mcp
   mcp --> client[Агент IDE]
 ```
 
-Индексатор и сервер — разные процессы. `docker compose up` корпус не индексирует: сервис `indexer` выполняет `health-check` и завершается, сервис `mcp` только читает уже собранные индексы. Сервис `ollama-pull` скачивает `qwen2.5:3b`, если модели ещё нет в томе.
+Индексатор и сервер — разные процессы. `docker compose up` корпус не индексирует: сервис `indexer` выполняет `health-check` и завершается, сервис `mcp` только читает уже собранные индексы.
 
 Сервер не пишет в `SourceFiles`, `Data/staging`, `Data/bm25` и в коллекцию. Папку `ChromaDB` он не открывает: коллекция читается по HTTP API. Единственная запись сервера на диск — журнал в `Data/Logs`.
 
@@ -66,6 +66,7 @@ flowchart LR
 | `Chroma` | HTTP-клиент коллекции `startrek` |
 | `Bm25` | Okapi BM25, токенизатор, файл корпуса, держатель индекса в памяти |
 | `Search` | Смысловой поиск, поиск по словам, слияние RRF |
+| `Rag` | Переписывание вопроса и передача запроса в гибридный поиск |
 | `Commands` | `analyze`, `chunk`, `embed`, `health-check`, `help` |
 | `Configuration` | `appsettings.json`, переменные `STARTREK_`, регистрация служб |
 
@@ -141,14 +142,11 @@ flowchart TB
   client[Агент IDE] --> http["HTTP /mcp"]
   http --> bm25tool[search_bm25]
   http --> semtool[search_semantic]
-  http --> hybtool[search_hybrid]
-  http --> ask[ask_question]
+  http --> hybtool[find_relevant_docs]
+  http --> asktool[ask_question]
   bm25tool --> lexical[LexicalSearchService]
   semtool --> semantic[SemanticSearchService]
   hybtool --> hybrid[HybridSearchService]
-  ask --> rag[CorrectiveRagService]
-  rag --> hybrid
-  rag --> ollama[Ollama qwen2.5:3b]
   lexical --> corpus[Bm25IndexHolder]
   lexical --> chroma[ChromaHttpClient]
   semantic --> embedder[IQueryEmbeddingGenerator]
@@ -157,53 +155,25 @@ flowchart TB
   hybrid --> embedder
   hybrid --> chroma
   hybrid --> rrf[ReciprocalRankFusion]
+  asktool --> retrieval[CorrectiveRagRetrieval]
+  retrieval --> hybrid
+  asktool --> chat[IChatClient]
 ```
 
-| Инструмент | Канал | Что в ответе |
+| Инструмент | Канал | Оценка в ответе |
 |---|---|---|
 | `search_bm25` | Токены запроса в Okapi BM25, текст чанка дочитывается из ChromaDB по id | `bm25Score`, больше — ближе |
 | `search_semantic` | Вектор запроса, `limit` ближайших соседей коллекции `startrek` | `distance`, для косинусной коллекции это `1 − сходство`, меньше — ближе |
-| `search_hybrid` | Оба списка, затем Reciprocal Rank Fusion | `rrfScore`, больше — выше. Рядом ранги и оценки каналов, если чанк в них был |
-| `ask_question` | Corrective RAG поверх `HybridSearchService` и Ollama | `answer`, `sources` (файл и позиция чанка), `meta.rewrittenQuery`, `meta.query`, `meta.attempts` |
+| `find_relevant_docs` | Оба списка, затем Reciprocal Rank Fusion | `rrfScore`, больше — выше. Рядом ранги и оценки каналов, если чанк в них был |
+| `ask_question` | Corrective RAG по вопросу, ответ только по чанкам с оценкой RRF не ниже порога | Текст ответа, `sources` (файл и позиция), `meta` (итоговый запрос и число попыток) |
 
-Общие параметры трёх поисков: обязательный `query` и необязательный `limit`. У `ask_question` параметр один — `question`. Пустой запрос — ошибка инструмента, поиск не вызывается. Нет `limit` — берётся `Indexer:Search:ResultCount` (10). Меньше 1 приводится к 1, больше 20 — к 20. Успешный ответ с нулём чанков значит, что совпадений нет. Ошибка называет, чего не хватает: модель, корпус BM25, коллекция или адрес ChromaDB. Исключение наружу процесс не валит.
+У трёх поисков общий обязательный `query` и необязательное число результатов. У `search_bm25` и `search_semantic` оно называется `limit`, у `find_relevant_docs` — `top_k`. Пустой запрос — ошибка инструмента, поиск не вызывается. Нет этого параметра — берётся `Indexer:Search:ResultCount` (10). Меньше 1 приводится к 1, больше 20 — к 20. Успешный ответ с нулём чанков значит, что совпадений нет. Ошибка называет, чего не хватает: модель, корпус BM25, коллекция или адрес ChromaDB. Исключение наружу процесс не валит. `ask_question` принимает один аргумент `question`. Пустой вопрос — ошибка инструмента.
 
-У `search_bm25` запрос без токенов — ошибка. У `search_hybrid` в этом случае канал BM25 пуст, векторный канал всё равно выполняется.
+У `search_bm25` запрос без токенов — ошибка. У `find_relevant_docs` в этом случае канал BM25 пуст, векторный канал всё равно выполняется.
 
 Поля чанка в ответе: `id`, `text`, оценки своего инструмента, `sourceFile`, `title`, `originalTitle`, `entityType`, `sectionPath`, `position`, `chunkIndex`. Нет ключа в metadata — поля нет, пустая строка не подставляется.
 
-Журнал — `ILogger` и файлы GELF через NLog, уровень `Debug`. Старт хоста пишется в `Data/Logs/mcp-init.log`, вызовы инструментов — в `Data/Logs/mcp-requests.log` (входящие `query` или `question` и `limit`, исходящий список чанков, текст ответа или текст ошибки). `GET /health` в журнал запросов не попадает. Канал логирования протокола MCP не включается.
-
-`ask_question` принимает обязательный `question`. Пустая строка — ошибка инструмента, граф не запускается. Ollama не отвечает, модель не скачана или ChromaDB недоступна — тоже ошибка инструмента, с текстом на русском. Слушатель при этом не падает: `GET /health` по-прежнему отвечает.
-
-## Corrective RAG
-
-Граф живёт в `CorrectiveRagService`. Четыре шага — функции Semantic Kernel `Rewrite`, `Grade`, `Broaden` и `Generate`. Текст каждой лежит в `src/StarTrek.Mcp/Prompts/*.txt`. В эмбеддинг по-прежнему уходит префикс `query: `, его добавляет `IQueryEmbeddingGenerator`, а не промпт.
-
-```mermaid
-flowchart TB
-  question[Вопрос] --> rewrite[Rewrite]
-  rewrite --> retrieve[Retrieve: HybridSearchService]
-  retrieve --> grade[Grade: да или нет по каждому чанку]
-  grade --> enough{Релевантных не меньше порога?}
-  enough -->|да| generate[Generate]
-  enough -->|нет| retries{Расширений уже максимум?}
-  retries -->|нет| broaden[Broaden]
-  broaden --> retrieve
-  retries -->|да, есть релевантные| generate
-  retries -->|да, ни одного| notfound[В базе знаний этого нет]
-  generate --> answer[Ответ, файл и позиция]
-```
-
-Поиск на каждом проходе — существующий `HybridSearchService`: вектор ChromaDB и BM25, затем RRF. Сколько чанков брать, задаёт `Rag:RetrieveCount` (сейчас 8). Grade смотрит каждый непустой чанк. Ответ «да», «yes» или «релевантен» (первое слово, без учёта регистра) — чанк релевантен. «нет», «no» и любой другой текст — нет.
-
-Если релевантных чанков не меньше `Rag:MinRelevantChunks` (сейчас 2), граф вызывает Generate и останавливается. Иначе Broaden расширяет запрос и поиск повторяется. `Rag:MaxBroadenAttempts` (сейчас 2) — сколько раз можно расширить запрос, то есть не больше трёх поисков: первый и два повтора. После последнего прохода, если релевантный чанк всё же есть, Generate пишет ответ по ним. Если не осталось ни одного, инструмент возвращает фразу «В базе знаний Star Trek об этом ничего не найдено.» и пустой список источников. Generate в этом случае не вызывается, чтобы модель не дописала факт из своих весов.
-
-`meta.rewrittenQuery` — строка после Rewrite. `meta.query` — запрос последнего поиска. `meta.attempts` — сколько раз вызывался поиск.
-
-Цикл написан прямо в `CorrectiveRagService`, а не на Process Framework Semantic Kernel. У графа одна развилка и один повтор. Process Framework разворачивает это в события и состояние, а тесты как раз проверяют число расширений и остановку. Функции при этом настоящие: `KernelRagChat` создаёт их через `KernelFunctionFactory.CreateFromPrompt` и кладёт в плагин `CorrectiveRag`. Чат идёт в Ollama коннектором `AddOllamaChatClient` (`IChatClient` из OllamaSharp). Перед первым вызовом `OllamaReadiness` читает `GET /api/tags`: нет соединения — «Ollama не отвечает», нет имени модели в списке — «Модель … не загружена».
-
-Имена вроде Т'Плана-Хат подставляются в промпт как есть. Фабрика шаблона включена с `AllowDangerouslySetContent`: иначе Semantic Kernel кодирует апостроф как `&#39;`, и модель видит не то имя. Кодирование HTML не останавливает подмену инструкции обычным текстом, а имена корпуса ломает.
+Журнал — `ILogger` и файлы GELF через NLog, уровень `Debug`. Старт хоста пишется в `Data/Logs/mcp-init.log`, вызовы инструментов — в `Data/Logs/mcp-requests.log` (входящие `query` или `question` и `limit` либо `top_k`, исходящий список чанков, ответ или текст ошибки). `GET /health` в журнал запросов не попадает. Канал логирования протокола MCP не включается.
 
 ## Слияние RRF
 
@@ -213,7 +183,24 @@ flowchart TB
 score(id) = Σ 1 / (k + rank)
 ```
 
-`rank` считается с 1, `k` — `Indexer:Search:RrfK` (60). Повтор id внутри одного списка учитывается один раз, по первой позиции. Порядок результата: оценка по убыванию, затем лучший ранг, затем id. Чанк, который есть только в одном списке, остаётся в выдаче со вкладом этого списка. Id из старого корпуса BM25, которого уже нет в коллекции, отбрасывается. Клиенту возвращается не больше `limit` чанков.
+`rank` считается с 1, `k` — `Indexer:Search:RrfK` (60). Повтор id внутри одного списка учитывается один раз, по первой позиции. Порядок результата: оценка по убыванию, затем лучший ранг, затем id. Чанк, который есть только в одном списке, остаётся в выдаче со вкладом этого списка. Id из старого корпуса BM25, которого уже нет в коллекции, отбрасывается. Клиенту возвращается не больше запрошенного числа чанков: у `find_relevant_docs` это `top_k`.
+
+## Corrective RAG и ask_question
+
+`ask_question` не ищет сам. Он вызывает `CorrectiveRagRetrieval`, оставляет чанки с оценкой не ниже порога и пишет ответ тем же `IChatClient`.
+
+```mermaid
+flowchart TB
+  question[Вопрос] --> rewrite[IQueryRewriter]
+  rewrite --> search[HybridSearchService]
+  search --> grade["IChunkRelevanceEvaluator, порог RRF"]
+  grade -->|хватило чанков| generate[IChatClient]
+  grade -->|мало| broaden[IQueryBroadener]
+  broaden --> search
+  grade -->|после двух расширений пусто| notfound[Фиксированный ответ]
+```
+
+`IQueryRewriter` спрашивает Ollama и при пустом ответе, ошибке или таймауте оставляет исходный вопрос. Если релевантных чанков меньше `Rag:MinRelevantChunks`, `IQueryBroadener` расширяет запрос и поиск повторяется, не больше `MaxBroadenAttempts` раз. Релевантный чанк — тот, чья оценка RRF не ниже `Rag:MinRrfScore`. Если таких чанков с текстом не осталось, модель для ответа не вызывается: возвращается «В базе знаний Star Trek об этом ничего не найдено.» Если чанки остались, ответ пишется только по ним, с файлом и позицией. Ошибка Ollama на шаге ответа и ошибка ChromaDB приходят текстом инструмента, процесс не падает.
 
 ## Конфигурация
 
@@ -229,8 +216,8 @@ score(id) = Σ 1 / (k + rank)
 | `Indexer:Bm25` | `K1 = 1.5`, `B = 0.75` |
 | `Indexer:Search` | `RrfK = 60`, по 20 кандидатов с канала, 10 в ответе по умолчанию |
 | `Mcp` | Путь, адрес слушателя, уровень и файлы журнала |
-| `Rag:Ollama` | Адрес Ollama и имя модели, локально `http://127.0.0.1:11434` и `qwen2.5:3b` |
-| `Rag` | `MinRelevantChunks` (2), `MaxBroadenAttempts` (2), `RetrieveCount` (8), каталог `Prompts` |
+| `Llm` | Адрес Ollama, тег модели (`qwen3.5:4b`), температура, таймаут |
+| `Rag` | `MinRelevantChunks = 2`, `MaxBroadenAttempts = 2`, временный порог `MinRrfScore` |
 
 ## Docker Compose
 
@@ -238,14 +225,14 @@ score(id) = Σ 1 / (k + rank)
 |---|---|---|
 | `chromadb` | `chromadb/chroma:1.5.9` | API на порту 8000, данные в `./ChromaDB` |
 | `indexer` | `startrek-indexer`, `Dockerfile` | По умолчанию `health-check` |
-| `ollama` | `ollama/ollama:latest` | API на порту 11434, модели в томе `ollama-models` |
-| `ollama-pull` | тот же образ | Один раз тянет `qwen2.5:3b` и завершается. Повторный запуск не качает модель заново, если она уже в томе |
-| `mcp` | `startrek-mcp`, `Dockerfile.mcp` | Слушает 8080. Монтирует корпус BM25 и папку модели только для чтения, журнал — на запись. Ходит в Ollama по `http://ollama:11434` |
+| `mcp` | `startrek-mcp`, `Dockerfile.mcp` | Слушает 8080. Монтирует корпус BM25 и папку модели только для чтения, журнал — на запись. `STARTREK_Llm__Endpoint=http://ollama:11434`, `STARTREK_Llm__Model=qwen3.5:4b` |
+| `ollama` | `ollama/ollama:latest` | API чата на порту 11434, том `ollama-models` |
+| `ollama-pull` | `ollama/ollama:latest` | Один раз скачивает `qwen3.5:4b` и завершается |
 
-В Compose адрес ChromaDB для индексатора и MCP — `http://chromadb:8000`. Адрес Ollama для MCP — `http://ollama:11434`, модель `qwen2.5:3b`.
+В Compose адрес ChromaDB для обоих процессов — `http://chromadb:8000`. Адрес Ollama для `mcp` — `http://ollama:11434`.
 
 ## Граница этого репозитория
 
-Собраны нарезка, локальные эмбеддинги, запись в ChromaDB, корпус BM25, три поисковых инструмента MCP и `ask_question` с Corrective RAG на Semantic Kernel и Ollama.
+Собраны нарезка, локальные эмбеддинги, запись в ChromaDB, корпус BM25, три поисковых инструмента MCP и `ask_question`.
 
-Три поиска по-прежнему отдают чанки и не пишут ответ. `ask_question` пишет ответ сам и указывает файл с позицией чанка. Отдельной команды индексации на MCP нет: папку индексирует консоль `embed`, статистику индекса `index_status` сервер не отдаёт. Инструмента `index_folder` нет.
+Три поиска отдают чанки по фразе аргумента `query`. `ask_question` отвечает через `CorrectiveRagRetrieval` и `IChatClient`: переписывание, гибридный поиск, порог RRF и до двух расширений запроса остаются в индексаторе. Папку индексирует консоль `embed`, статистику индекса `index_status` сервер не отдаёт.
