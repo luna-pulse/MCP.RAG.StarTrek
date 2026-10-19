@@ -150,14 +150,18 @@ public static class McpHost
         }
 
         var arguments = context.Params?.Arguments;
-        var limit = arguments is not null && arguments.ContainsKey("limit")
-            ? ArgumentText(arguments, "limit")
+        var countParameter = string.Equals(context.Params?.Name, "find_relevant_docs", StringComparison.Ordinal)
+            ? "top_k"
+            : "limit";
+        var count = arguments is not null && arguments.ContainsKey(countParameter)
+            ? ArgumentText(arguments, countParameter)
             : "нет";
         logger.LogDebug(
-            "Входящая модель запроса: инструмент {Tool}, query {Query}, limit {Limit}.",
+            "Входящая модель запроса: инструмент {Tool}, query {Query}, {CountParameter} {Count}.",
             context.Params?.Name,
             ArgumentText(arguments, "query"),
-            limit);
+            countParameter,
+            count);
     }
 
     private static void LogOutgoing(ILogger? logger, CallToolResult result)
@@ -195,7 +199,7 @@ public static class McpHost
         {
             var mcp = options.Value;
             loggerFactory.CreateLogger(McpLog.Initialization).LogDebug(
-                "Слушатель HTTP {Urls}. Конечная точка MCP {Path}. Зарегистрированы инструменты search_bm25, search_semantic и search_hybrid.",
+                "Слушатель HTTP {Urls}. Конечная точка MCP {Path}. Зарегистрированы инструменты search_bm25, search_semantic и find_relevant_docs.",
                 mcp.Urls,
                 mcp.Path);
             return Task.CompletedTask;

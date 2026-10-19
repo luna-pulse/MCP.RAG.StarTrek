@@ -18,7 +18,7 @@ flowchart TB
     Client["Клиент: агент"] --> Server["MCP-сервер"]
     Server --> Bm25["search_bm25\nслова запроса, Okapi BM25"]
     Server --> Semantic["search_semantic\nсмысл запроса в ChromaDB"]
-    Server --> Hybrid["search_hybrid\nслова и смысл, слияние RRF"]
+    Server --> Hybrid["find_relevant_docs\nслова и смысл, слияние RRF"]
     Bm25 --> Corpus["Data/bm25/corpus.json"]
     Semantic --> Chroma["ChromaDB, коллекция startrek"]
     Hybrid --> Corpus
@@ -168,7 +168,7 @@ flowchart LR
 
 - `search_bm25` — слова запроса в индексе Okapi BM25;
 - `search_semantic` — смысл запроса в коллекции `startrek`;
-- `search_hybrid` — оба списка, слияние RRF в `HybridSearchService`.
+- `find_relevant_docs` — оба списка, слияние RRF в `HybridSearchService`.
 
 Сервер возвращает чанки. Ответ на вопрос пишет клиент, которому эти чанки отданы: агент IDE или локальная модель.
 
